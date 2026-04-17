@@ -57,4 +57,20 @@
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--color-pp-surface);
+  padding-bottom: 56px; /* space for mobile bottom nav */
+}
+
+@media (min-width: 768px) {
+  body {
+    padding-bottom: 0;
+  }
+}
+
+/* Slide-in animation for mobile menu */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-in.slide-in-from-left {
+  animation: slideInLeft 0.25s ease-out;
 }

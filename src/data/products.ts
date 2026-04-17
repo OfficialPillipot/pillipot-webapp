@@ -8,6 +8,7 @@ export interface Product {
   rating: number;
   reviews: number;
   image: string;
+  images?: string[];
   description: string;
   brand: string;
   isAssured: boolean;
@@ -25,6 +26,12 @@ export const PRODUCTS: Product[] = [
     rating: 4.7,
     reviews: 12543,
     image: "https://images.unsplash.com/photo-1696446701796-da61225697cc?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1696446701796-da61225697cc?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&q=80&w=600"
+    ],
     description: "128 GB ROM, 15.49 cm (6.1 inch) Super Retina XDR Display, 48MP + 12MP | 12MP Front Camera, A16 Bionic Chip, 6 Core Processor.",
     brand: "Apple",
     isAssured: true,
@@ -39,6 +46,11 @@ export const PRODUCTS: Product[] = [
     rating: 4.8,
     reviews: 5432,
     image: "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1585060544812-6b45742d762f?auto=format&fit=crop&q=80&w=600"
+    ],
     description: "256 GB ROM, 17.27 cm (6.8 inch) Quad HD+ Display, 200MP + 50MP + 12MP + 10MP | 12MP Front Camera, 5000 mAh Battery.",
     brand: "Samsung",
     isAssured: true,
@@ -97,6 +109,12 @@ export const PRODUCTS: Product[] = [
     rating: 4.8,
     reviews: 1243,
     image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&q=80&w=600"
+    ],
     description: "Apple M2 Chip, 8 GB Unified Memory, 256 GB SSD, 34.46 cm (13.6 inch) Liquid Retina Display.",
     brand: "Apple",
     isAssured: true,
@@ -139,6 +157,11 @@ export const PRODUCTS: Product[] = [
     rating: 4.7,
     reviews: 876,
     image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fit=crop&q=80&w=600"
+    ],
     description: "Industry leading noise cancellation, 30 hours battery life.",
     brand: "Sony",
     isAssured: true,
@@ -183,6 +206,11 @@ export const PRODUCTS: Product[] = [
     rating: 4.6,
     reviews: 2311,
     image: "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&q=80&w=600",
+    images: [
+      "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=600",
+      "https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&q=80&w=600"
+    ],
     description: "Lightweight boost cushioning, breathable mesh.",
     brand: "Adidas",
     isAssured: true,

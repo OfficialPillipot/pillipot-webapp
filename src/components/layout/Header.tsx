@@ -2,80 +2,189 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Search, ShoppingCart, ChevronDown, User, Heart } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
+import { Search, ShoppingCart, User, Heart, Menu, X, Home, Package } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 
 export default function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
   const [search, setSearch] = React.useState("");
+  const [menuOpen, setMenuOpen] = React.useState(false);
+  const [searchOpen, setSearchOpen] = React.useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
       router.push(`/category/${encodeURIComponent(search.trim())}`);
+      setSearchOpen(false);
     }
   };
 
   return (
-    <header className="pp-gradient sticky top-0 z-50">
-      <div className="pp-container w-full flex items-center px-4 md:px-8 h-16 gap-4 lg:gap-8">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-1.5 shrink-0">
-          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-            <span className="text-pp-primary font-black text-lg">P</span>
-          </div>
-          <div className="flex flex-col leading-none">
-            <span className="text-white font-extrabold text-lg tracking-tight">pillipot</span>
-            <span className="text-white/60 text-[10px] font-medium tracking-widest uppercase">marketplace</span>
-          </div>
-        </Link>
-
-        {/* Search */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-[560px] relative">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products, brands & more..."
-            className="w-full bg-white/15 backdrop-blur-sm border border-white/20 h-10 rounded-xl px-5 pr-12 text-sm outline-none text-white placeholder:text-white/50 focus:bg-white/25 focus:border-white/40 transition-all"
-          />
-          <button type="submit" className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 w-7 h-7 flex items-center justify-center rounded-lg transition-colors">
-            <Search className="text-white w-4 h-4" />
+    <>
+      <header className="pp-gradient sticky top-0 z-50">
+        <div className="pp-container w-full flex items-center px-4 md:px-8 h-14 md:h-16 gap-3 lg:gap-8">
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="lg:hidden text-white p-1"
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
-        </form>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2 lg:gap-3">
-          <Link href="/orders" className="hidden md:flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium">
-            <User className="w-4 h-4" />
-            Account
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-1.5 shrink-0">
+            <div className="w-7 h-7 md:w-8 md:h-8 bg-white rounded-lg flex items-center justify-center">
+              <span className="text-pp-primary font-black text-base md:text-lg">P</span>
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-white font-extrabold text-base md:text-lg tracking-tight">pillipot</span>
+              <span className="text-white/60 text-[9px] md:text-[10px] font-medium tracking-widest uppercase hidden sm:block">marketplace</span>
+            </div>
           </Link>
 
-          <Link href="/wishlist" className="hidden lg:flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium relative">
-            <Heart className="w-4 h-4" />
-            Wishlist
-            {wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-pp-accent text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black">
-                {wishlistCount}
-              </span>
-            )}
-          </Link>
+          {/* Desktop Search */}
+          <form onSubmit={handleSearch} className="flex-1 max-w-[560px] relative hidden md:block">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products, brands & more..."
+              className="w-full bg-white/15 backdrop-blur-sm border border-white/20 h-10 rounded-xl px-5 pr-12 text-sm outline-none text-white placeholder:text-white/50 focus:bg-white/25 focus:border-white/40 transition-all"
+            />
+            <button type="submit" className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 w-7 h-7 flex items-center justify-center rounded-lg transition-colors">
+              <Search className="text-white w-4 h-4" />
+            </button>
+          </form>
 
-          <Link href="/cart" className="flex items-center gap-2 text-white px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm font-semibold relative">
-            <ShoppingCart className="w-4 h-4" />
-            <span className="hidden sm:inline">Cart</span>
-            {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-pp-accent text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black shadow-lg">
-                {cartCount}
-              </span>
-            )}
-          </Link>
+          {/* Mobile search toggle */}
+          <button
+            onClick={() => setSearchOpen(!searchOpen)}
+            className="md:hidden text-white p-1 ml-auto"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-2 lg:gap-3">
+            <Link href="/orders" className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium">
+              <User className="w-4 h-4" />
+              <span className="hidden lg:inline">Account</span>
+            </Link>
+
+            <Link href="/wishlist" className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium relative">
+              <Heart className="w-4 h-4" />
+              <span className="hidden lg:inline">Wishlist</span>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-pp-accent text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            <Link href="/cart" className="flex items-center gap-2 text-white px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm font-semibold relative">
+              <ShoppingCart className="w-4 h-4" />
+              <span className="hidden lg:inline">Cart</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-pp-accent text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black shadow-lg">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
-      </div>
-    </header>
+
+        {/* Mobile Search Bar (expandable) */}
+        {searchOpen && (
+          <div className="md:hidden px-4 pb-3">
+            <form onSubmit={handleSearch} className="relative">
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search products, brands..."
+                autoFocus
+                className="w-full bg-white/15 border border-white/20 h-10 rounded-xl px-4 pr-10 text-sm outline-none text-white placeholder:text-white/50 focus:bg-white/25"
+              />
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2">
+                <Search className="text-white w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        )}
+      </header>
+
+      {/* Mobile Slide Menu */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
+          <div className="absolute top-0 left-0 w-72 h-full bg-white shadow-2xl z-50 flex flex-col animate-in slide-in-from-left">
+            <div className="pp-gradient p-5 flex items-center gap-3">
+              <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                <span className="text-pp-primary font-black text-xl">P</span>
+              </div>
+              <div className="flex flex-col leading-none">
+                <span className="text-white font-extrabold text-lg">pillipot</span>
+                <span className="text-white/60 text-[10px] tracking-widest uppercase">marketplace</span>
+              </div>
+            </div>
+            <nav className="flex-1 p-4 space-y-1">
+              {[
+                { label: "Home", href: "/", icon: Home },
+                { label: "My Orders", href: "/orders", icon: Package },
+                { label: "My Wishlist", href: "/wishlist", icon: Heart },
+                { label: "My Cart", href: "/cart", icon: ShoppingCart },
+                { label: "My Account", href: "/orders", icon: User },
+              ].map((item) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMenuOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                    pathname === item.href
+                      ? "bg-violet-50 text-pp-primary font-bold"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <item.icon className="w-5 h-5" />
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Bottom Nav Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 pp-shadow">
+        <div className="flex items-center justify-around h-14">
+          <BottomNavItem href="/" icon={Home} label="Home" active={pathname === "/"} />
+          <BottomNavItem href="/wishlist" icon={Heart} label="Wishlist" active={pathname === "/wishlist"} badge={wishlistCount} />
+          <BottomNavItem href="/cart" icon={ShoppingCart} label="Cart" active={pathname === "/cart"} badge={cartCount} />
+          <BottomNavItem href="/orders" icon={Package} label="Orders" active={pathname === "/orders"} />
+          <BottomNavItem href="/orders" icon={User} label="Account" active={false} />
+        </div>
+      </nav>
+    </>
+  );
+}
+
+function BottomNavItem({ href, icon: Icon, label, active, badge }: {
+  href: string; icon: any; label: string; active: boolean; badge?: number;
+}) {
+  return (
+    <Link href={href} className="flex flex-col items-center gap-0.5 relative">
+      <Icon className={`w-5 h-5 ${active ? "text-pp-primary" : "text-gray-400"}`} />
+      <span className={`text-[10px] font-semibold ${active ? "text-pp-primary" : "text-gray-400"}`}>{label}</span>
+      {badge && badge > 0 ? (
+        <span className="absolute -top-1 right-0 bg-pp-accent text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-black">
+          {badge}
+        </span>
+      ) : null}
+    </Link>
   );
 }
