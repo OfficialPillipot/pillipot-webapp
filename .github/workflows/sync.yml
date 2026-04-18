@@ -1,77 +1,18 @@
-# ──────────────────────────────────────────────────────────────
-# Bi-directional Sync (Fork ↔ Upstream)
-#hai
-# 1. Pulls from Upstream → Fork (Handles Divergence with Merge)
-# 2. Pushes from Fork → Upstream (Using UPSTREAM_TOKEN sync)
-# ──────────────────────────────────────────────────────────────
-
-name: Sync Fork and Upstream
+name: Notify Fork Sync
 
 on:
   push:
     branches: [main]
-  schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch:
 
 jobs:
-  sync:
-    name: Sync changes
+  dispatch:
     runs-on: ubuntu-latest
-    
-    permissions:
-      contents: write
 
     steps:
-      # ── 1. Checkout the fork ──────────────────────────────
-      - name: Checkout fork
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      # ── 2. Configure git identity ─────────────────────────
-      - name: Configure git
+      - name: Trigger fork sync workflow
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      # ── 3. Add upstream remote and update origin ──────────
-      - name: Add upstream and fetch
-        run: |
-          # Upstream URL
-          UPSTREAM_URL="https://github.com/ginilmathew/pillipot-webapp.git"
-          # Authenticated Upstream URL for push
-          AUTH_UPSTREAM="https://x-access-token:${{ secrets.UPSTREAM_TOKEN }}@github.com/ginilmathew/pillipot-webapp.git"
-          
-          # Authenticated Origin URL (Fork) for push - using the same token
-          # We update origin so that the push to fork also has permission to modify workflows
-          FORK_URL="https://x-access-token:${{ secrets.UPSTREAM_TOKEN }}@github.com/OfficialPillipot/pillipot-webapp.git"
-          
-          echo "Syncing with: $UPSTREAM_URL"
-          git remote add upstream "$AUTH_UPSTREAM"
-          git remote set-url origin "$FORK_URL"
-          git fetch upstream main --quiet
-
-      # ── 4. SYNC: UPSTREAM -> FORK ──────────────────────────
-      - name: Pull from Upstream
-        run: |
-          UPSTREAM_COMMITS=$(git rev-list HEAD..upstream/main --count)
-          if [ "$UPSTREAM_COMMITS" -gt 0 ]; then
-            echo "⬇️ Merging $UPSTREAM_COMMITS new commits from Upstream..."
-            git merge upstream/main --no-edit
-            git push origin main
-          else
-            echo "✅ Fork is already up-to-date with Upstream."
-          fi
-
-      # ── 5. SYNC: FORK -> UPSTREAM ──────────────────────────
-      - name: Push to Upstream
-        run: |
-          FORK_COMMITS=$(git rev-list upstream/main..HEAD --count)
-          if [ "$FORK_COMMITS" -gt 0 ]; then
-            echo "⬆️ Pushing $FORK_COMMITS new commits to Upstream..."
-            git push upstream main
-          else
-            echo "✅ Upstream is already up-to-date with Fork."
-          fi
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.UPSTREAM_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/OfficialPillipot/pillipot-webapp/dispatches \
+            -d '{"event_type":"sync-from-upstream"}'
