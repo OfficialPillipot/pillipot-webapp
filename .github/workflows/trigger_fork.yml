@@ -3,16 +3,16 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # This allows you to test it with a button
+  workflow_dispatch:
 
 jobs:
   ping_fork:
     runs-on: ubuntu-latest
     steps:
-      - name: Send signal to fork
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          # This MUST match the secret name in your Settings
-          token: ${{ secrets.MY_PAT }} 
-          repository: OfficialPillipot/pillipot-webapp
-          event-type: upstream_updated
+      - name: Send signal to fork via API
+        run: |
+          curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/OfficialPillipot/pillipot-webapp/dispatches \
+          -d '{"event_type": "upstream_updated"}'
