@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: "*/15 * * * *" # Runs every hour
+    - cron: "*/15 * * * *" # Runs15 min
   workflow_dispatch:    # Allows you to run it manually
 
 jobs:
