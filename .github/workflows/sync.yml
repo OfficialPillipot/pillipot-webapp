@@ -41,20 +41,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # ── 3. Detect and add upstream automatically ──────────
-      # Uses GitHub CLI (gh) to find the parent repository of this fork
+      # ── 3. Add upstream remote ──────────────────────────
+      # Hardcoded to ensure reliability
       - name: Add upstream and fetch
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          UPSTREAM_URL=$(gh repo view --json parent -q '.parent.url')
-          if [ -z "$UPSTREAM_URL" ] || [ "$UPSTREAM_URL" = "null" ]; then
-            echo "❌ Error: This repository does not appear to be a fork."
-            exit 1
-          fi
-
-          echo "Detected Upstream: $UPSTREAM_URL"
-          git remote add upstream "$UPSTREAM_URL"
+          UPSTREAM_URL="https://github.com/ginilmathew/pillipot-webapp.git"
+          
+          # Construct authenticated URL using the UPSTREAM_TOKEN secret for push access
+          AUTH_UPSTREAM="https://x-access-token:${{ secrets.UPSTREAM_TOKEN }}@github.com/ginilmathew/pillipot-webapp.git"
+          
+          echo "Syncing with: $UPSTREAM_URL"
+          git remote add upstream "$AUTH_UPSTREAM"
           git fetch upstream main --quiet
 
       # ── 4. Compare upstream with local ─────────────────────
