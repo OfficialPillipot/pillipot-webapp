@@ -4,9 +4,9 @@ permissions:
   contents: write
 
 on:
-  schedule:
-    - cron: "*/15 * * * *" # Runs roughly every 15 minutes
-  workflow_dispatch:    # Allows you to run it manually
+  repository_dispatch:
+    types: [upstream_updated] # This matches the signal from Step 3
+  workflow_dispatch:          # Keep this so you can still run it manually
 
 jobs:
   sync_latest_from_upstream:
