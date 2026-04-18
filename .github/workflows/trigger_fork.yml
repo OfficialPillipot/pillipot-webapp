@@ -1,0 +1,16 @@
+name: Trigger Fork Sync
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  ping_fork:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send signal to fork
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.MY_PAT }}
+          repository: OfficialPillipot/pillipot-webapp
+          event-type: upstream_updated
