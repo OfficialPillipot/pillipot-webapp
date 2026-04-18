@@ -8,7 +8,7 @@ import { PRODUCTS } from "@/data/products";
 
 const MOCK_ORDERS = [
   {
-    orderId: "PP1234567190",
+    orderId: "PP1234567130",
     status: "Delivered",
     date: "Dec 12, 2025",
     items: [PRODUCTS[0]],
