@@ -1,0 +1,27 @@
+name: Upstream Sync
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Runs every hour
+  workflow_dispatch:    # Allows you to run it manually
+
+jobs:
+  sync_latest_from_upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Sync upstream changes
+        id: sync
+        uses: aieri/repo-sync@v1
+        with:
+          source_repo: "https://github.com/ginilmathew/pillipot-webapp.git"
+          source_branch: "main"
+          destination_branch: "main"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
