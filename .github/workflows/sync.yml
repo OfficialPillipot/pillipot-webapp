@@ -21,7 +21,6 @@ jobs:
     
     permissions:
       contents: write
-      workflows: write
 
     steps:
       # ── 1. Checkout the fork ──────────────────────────────
@@ -37,16 +36,21 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # ── 3. Add upstream remote ────────────────────────────
+      # ── 3. Add upstream remote and update origin ──────────
       - name: Add upstream and fetch
         run: |
+          # Upstream URL
           UPSTREAM_URL="https://github.com/ginilmathew/pillipot-webapp.git"
-          
-          # Construct authenticated URL using the UPSTREAM_TOKEN secret for push access
+          # Authenticated Upstream URL for push
           AUTH_UPSTREAM="https://x-access-token:${{ secrets.UPSTREAM_TOKEN }}@github.com/ginilmathew/pillipot-webapp.git"
+          
+          # Authenticated Origin URL (Fork) for push - using the same token
+          # We update origin so that the push to fork also has permission to modify workflows
+          FORK_URL="https://x-access-token:${{ secrets.UPSTREAM_TOKEN }}@github.com/OfficialPillipot/pillipot-webapp.git"
           
           echo "Syncing with: $UPSTREAM_URL"
           git remote add upstream "$AUTH_UPSTREAM"
+          git remote set-url origin "$FORK_URL"
           git fetch upstream main --quiet
 
       # ── 4. SYNC: UPSTREAM -> FORK ──────────────────────────
@@ -55,7 +59,6 @@ jobs:
           UPSTREAM_COMMITS=$(git rev-list HEAD..upstream/main --count)
           if [ "$UPSTREAM_COMMITS" -gt 0 ]; then
             echo "⬇️ Merging $UPSTREAM_COMMITS new commits from Upstream..."
-            # Using standard merge (allowing divergence) to ensure the fork gets updates
             git merge upstream/main --no-edit
             git push origin main
           else
@@ -68,7 +71,6 @@ jobs:
           FORK_COMMITS=$(git rev-list upstream/main..HEAD --count)
           if [ "$FORK_COMMITS" -gt 0 ]; then
             echo "⬆️ Pushing $FORK_COMMITS new commits to Upstream..."
-            # Authenticated push back to the parent repo
             git push upstream main
           else
             echo "✅ Upstream is already up-to-date with Fork."
