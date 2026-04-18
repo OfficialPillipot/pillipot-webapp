@@ -1,27 +1,24 @@
 # ──────────────────────────────────────────────────────────────
-# Sync Fork with Upstream
+# Bi-directional Sync (Fork ↔ Upstream)
 #
-# Keeps this fork in sync with the upstream repository.
-# Only pushes when there are real upstream changes,
-# which triggers Vercel deployment automatically.
+# 1. Pulls from Upstream → Fork (Handles Divergence with Merge)
+# 2. Pushes from Fork → Upstream (Using UPSTREAM_TOKEN sync)
 # ──────────────────────────────────────────────────────────────
 
-name: Sync Fork with Upstream
+name: Sync Fork and Upstream
 
 on:
-  # Run every 5 minutes
+  push:
+    branches: [main]
   schedule:
     - cron: "*/5 * * * *"
-
-  # Allow manual trigger from GitHub Actions UI
   workflow_dispatch:
 
 jobs:
   sync:
-    name: Sync upstream → fork
+    name: Sync changes
     runs-on: ubuntu-latest
-
-    # Required so the workflow can push to the repo
+    
     permissions:
       contents: write
 
@@ -30,9 +27,7 @@ jobs:
       - name: Checkout fork
         uses: actions/checkout@v4
         with:
-          # Fetch full history so we can compare commits
           fetch-depth: 0
-          # Use the default GITHUB_TOKEN for push access
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # ── 2. Configure git identity ─────────────────────────
@@ -41,8 +36,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # ── 3. Add upstream remote ──────────────────────────
-      # Hardcoded to ensure reliability
+      # ── 3. Add upstream remote ────────────────────────────
       - name: Add upstream and fetch
         run: |
           UPSTREAM_URL="https://github.com/ginilmathew/pillipot-webapp.git"
@@ -54,36 +48,27 @@ jobs:
           git remote add upstream "$AUTH_UPSTREAM"
           git fetch upstream main --quiet
 
-      # ── 4. Compare upstream with local ─────────────────────
-      # Check if upstream has new commits that fork doesn't have
-      - name: Check for upstream changes
-        id: check
+      # ── 4. SYNC: UPSTREAM -> FORK ──────────────────────────
+      - name: Pull from Upstream
         run: |
-          LOCAL_SHA=$(git rev-parse HEAD)
-          UPSTREAM_SHA=$(git rev-parse upstream/main)
-
-          echo "local_sha=$LOCAL_SHA"
-          echo "upstream_sha=$UPSTREAM_SHA"
-
-          if [ "$LOCAL_SHA" = "$UPSTREAM_SHA" ]; then
-            echo "✅ Fork is already up-to-date with upstream."
-            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          UPSTREAM_COMMITS=$(git rev-list HEAD..upstream/main --count)
+          if [ "$UPSTREAM_COMMITS" -gt 0 ]; then
+            echo "⬇️ Merging $UPSTREAM_COMMITS new commits from Upstream..."
+            # Using standard merge (allowing divergence) to ensure the fork gets updates
+            git merge upstream/main --no-edit
+            git push origin main
           else
-            # Count how many new commits upstream has
-            NEW_COMMITS=$(git rev-list HEAD..upstream/main --count)
-            echo "🔄 Upstream has $NEW_COMMITS new commit(s) to sync."
-            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Fork is already up-to-date with Upstream."
           fi
 
-      # ── 5. Sync only if there are changes ──────────────────
-      # Rebase local main on top of upstream/main and push
-      - name: Pull upstream changes and push to fork
-        if: steps.check.outputs.has_changes == 'true'
+      # ── 5. SYNC: FORK -> UPSTREAM ──────────────────────────
+      - name: Push to Upstream
         run: |
-          echo "⬇️  Merging upstream/main into local main..."
-          git merge upstream/main --ff-only
-
-          echo "⬆️  Pushing updated main to origin (fork)..."
-          git push origin main
-
-          echo "🚀 Sync complete — Vercel deployment should trigger now."
+          FORK_COMMITS=$(git rev-list upstream/main..HEAD --count)
+          if [ "$FORK_COMMITS" -gt 0 ]; then
+            echo "⬆️ Pushing $FORK_COMMITS new commits to Upstream..."
+            # Authenticated push back to the parent repo
+            git push upstream main
+          else
+            echo "✅ Upstream is already up-to-date with Fork."
+          fi
