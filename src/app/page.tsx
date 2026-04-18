@@ -29,7 +29,7 @@ export default function Home() {
                 <span className="text-white/80 text-sm font-semibold uppercase tracking-widest">Flash Sale Live Now</span>
               </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight mb-4">
-                Up to <span className="text-yellow-300">50% Off</span><br />
+                Up to <span className="text-yellow-300">80% Off</span><br />
                 on Top Brands
               </h1>
               <p className="text-white/60 text-sm md:text-base mb-8 max-w-md">
