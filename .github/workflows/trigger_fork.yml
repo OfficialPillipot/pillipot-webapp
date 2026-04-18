@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch: # This allows you to test it with a button
 
 jobs:
   ping_fork:
@@ -11,6 +12,7 @@ jobs:
       - name: Send signal to fork
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.MY_PAT }}
+          # This MUST match the secret name in your Settings
+          token: ${{ secrets.MY_PAT }} 
           repository: OfficialPillipot/pillipot-webapp
           event-type: upstream_updated
