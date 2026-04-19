@@ -89,7 +89,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
         <nav className="text-sm text-gray-500 flex items-center gap-1.5 mb-6">
           <a href="/" className="hover:text-pp-primary">Home</a>
           <span className="text-gray-300">›</span>
-          <a href={`/category/${product.category}`} className="hover:text-pp-primary">{product.category}</a>
+          <a href={`/category/${product.categoryId}`} className="hover:text-pp-primary">View Series</a>
           <span className="text-gray-300">›</span>
           <span className="text-gray-700 font-medium truncate max-w-[200px]">{product.name}</span>
         </nav>
@@ -131,7 +131,7 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
                   style={isHoverZoom ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
                   priority
                 />
-                {product.discount > 0 && (
+                {(product.discount ?? 0) > 0 && (
                   <div className="absolute top-4 left-4 bg-pp-accent text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
                     {product.discount}% OFF
                   </div>
