@@ -55,8 +55,14 @@ export default function CartPage() {
             {cart.map((item) => (
               <div key={item.id} className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 pp-shadow hover:pp-shadow-hover transition-shadow">
                 <div className="flex items-center gap-4">
-                  <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-50 shrink-0">
-                    <Image src={item.imageUrl || ""} alt={item.name} fill sizes="96px" className="object-cover" />
+                  <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                    <Image
+                      src={item.imageUrl || "/placeholder.png"}
+                      alt={item.name}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                    />
                   </div>
                   {/* Quantity */}
                   <div className="flex items-center bg-gray-50 rounded-lg overflow-hidden border border-gray-200">

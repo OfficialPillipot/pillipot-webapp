@@ -40,7 +40,7 @@ export default async function Home() {
                 Shop Now <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="relative w-full md:w-[40%] h-56 md:h-[300px]">
+            <div className="relative w-full md:w-[40%] h-56 md:h-[400px]">
               <Image
                 src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=800"
                 alt="Flash Sale"
@@ -55,7 +55,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <main className="flex-1 pp-container px-4 py-6">
+      <main className="flex-1  px-16  py-6">
 
         {/* Feature badges */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">

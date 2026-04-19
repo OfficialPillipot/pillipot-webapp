@@ -59,107 +59,93 @@ export default function ProductClient({ product }: { product: Product }) {
 
   return (
     <>
-      <main className="flex-1 pp-container px-4 py-6">
-        {/* Breadcrumb */}
-        <nav className="text-sm text-gray-500 flex items-center gap-1.5 mb-6">
-          <a href="/" className="hover:text-pp-primary">Home</a>
-          <span className="text-gray-300">›</span>
-          <a href={`/category/${product.categoryId}`} className="hover:text-pp-primary">View Series</a>
-          <span className="text-gray-300">›</span>
-          <span className="text-gray-700 font-medium truncate max-w-[200px]">{product.name}</span>
-        </nav>
+    <div className="bg-[#f1f3f6] min-h-screen">
+      <main className="max-w-[1280px] mx-auto bg-white min-h-screen shadow-sm border-x border-gray-200">
+        
+        {/* Breadcrumb - Flipkart style top padding */}
+        <div className="px-4 pt-4">
+          <nav className="text-xs text-gray-500 flex items-center gap-1.5 opacity-80">
+            <a href="/" className="hover:text-blue-600">Home</a>
+            <span className="text-gray-300">›</span>
+            <a href={`/category/${product.categoryId}`} className="hover:text-blue-600 truncate max-w-[150px]">View Series</a>
+            <span className="text-gray-300">›</span>
+            <span className="text-gray-700 font-medium truncate max-w-[200px]">{product.name}</span>
+          </nav>
+        </div>
 
-        <div className="flex flex-col lg:flex-row gap-16 xl:gap-24">
-          {/* Left: Gallery */}
-          <div className="lg:w-[50%] xl:w-[55%] flex flex-col sm:flex-row gap-5">
-            {/* Thumbnails */}
-            <div className="flex sm:flex-col gap-2 order-2 sm:order-1 overflow-x-auto sm:overflow-y-auto no-scrollbar sm:max-h-[500px]">
-              {allImages.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedIndex(i)}
-                  className={`relative w-16 h-16 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${
-                    selectedIndex === i ? "border-pp-primary shadow-md" : "border-gray-200 hover:border-gray-300"
-                  }`}
+        <div className="flex flex-col lg:flex-row p-4 gap-6">
+          
+          {/* Left Column: Fixed/Sticky Gallery & Actions */}
+          <div className="lg:w-[40%] flex flex-col gap-4">
+            <div className="lg:sticky lg:top-4 flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* Thumbnails - Vertical on Desktop */}
+                <div className="flex sm:flex-col gap-2 order-2 sm:order-1 overflow-x-auto sm:overflow-y-auto no-scrollbar sm:max-h-[450px]">
+                  {allImages.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedIndex(i)}
+                      className={`relative w-14 h-14 shrink-0 rounded border transition-all p-1 bg-white ${
+                        selectedIndex === i ? "border-[#2874f0] shadow-sm" : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <Image src={img} alt={`${product.name} view ${i + 1}`} fill sizes="56px" className="object-contain" />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Main Image */}
+                <div 
+                  ref={imageRef}
+                  className="flex-1 order-1 sm:order-2 relative aspect-[4/5] sm:aspect-square bg-white border border-gray-100 p-4 cursor-crosshair overflow-hidden"
+                  onMouseEnter={() => setIsHoverZoom(true)}
+                  onMouseLeave={() => setIsHoverZoom(false)}
+                  onMouseMove={handleMouseMove}
                 >
-                  <Image src={img} alt={`${product.name} view ${i + 1}`} fill sizes="64px" className="object-cover" />
-                </button>
-              ))}
-            </div>
-
-            {/* Main Image with zoom */}
-            <div className="flex-1 flex flex-col gap-3 order-1 sm:order-2">
-              <div
-                ref={imageRef}
-                className="bg-white rounded-2xl border border-gray-100 relative aspect-square pp-shadow cursor-crosshair overflow-hidden"
-                onMouseEnter={() => setIsHoverZoom(true)}
-                onMouseLeave={() => setIsHoverZoom(false)}
-                onMouseMove={handleMouseMove}
-                onClick={() => setZoomOpen(true)}
-              >
-                <Image
-                  src={allImages[selectedIndex]}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 45vw"
-                  className={`object-contain p-4 transition-transform duration-200 ${isHoverZoom ? "scale-150" : "scale-100"}`}
-                  style={isHoverZoom ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
-                  priority
-                />
-                {(product.discount ?? 0) > 0 && (
-                  <div className="absolute top-4 left-4 bg-pp-accent text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
-                    {product.discount}% OFF
-                  </div>
-                )}
-                <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+                  <Image
+                    src={allImages[selectedIndex]}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 40vw"
+                    className={`object-contain transition-transform duration-200 ${isHoverZoom ? "scale-200" : "scale-100"}`}
+                    style={isHoverZoom ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
+                    priority
+                  />
                   <button
                     onClick={(e) => { 
                       e.stopPropagation(); 
-                      if (!user) {
-                        setIsLoginModalOpen(true);
-                        return;
-                      }
+                      if (!user) { setIsLoginModalOpen(true); return; }
                       toggleWishlist(product); 
                     }}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-sm border border-gray-100 ${
-                      isInWishlist(product.id) ? "bg-pp-accent text-white" : "bg-white/90 backdrop-blur-sm hover:bg-pp-accent hover:text-white"
+                    className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center transition-all bg-white border border-gray-100 shadow-sm ${
+                      isInWishlist(product.id) ? "text-red-500" : "text-gray-300 hover:text-red-500"
                     }`}
                   >
-                    <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? "fill-white" : ""}`} />
-                  </button>
-                  <button onClick={(e) => e.stopPropagation()} className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-pp-primary hover:text-white transition-all shadow-sm border border-gray-100">
-                    <Share2 className="w-5 h-5" />
+                    <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
                   </button>
                 </div>
-                <div className="absolute bottom-3 right-3 bg-black/50 text-white text-[10px] font-bold px-2 py-1 rounded-lg flex items-center gap-1 z-10">
-                  <ZoomIn className="w-3 h-3" /> Hover to zoom
-                </div>
-                {/* Arrow navigation */}
-                {allImages.length > 1 && (
-                  <>
-                    <button onClick={(e) => { e.stopPropagation(); goPrev(); }} className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center shadow-md hover:bg-white z-10">
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button onClick={(e) => { e.stopPropagation(); goNext(); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center shadow-md hover:bg-white z-10">
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </>
-                )}
               </div>
 
-              <div className="flex gap-3">
-                <button onClick={handleAddToCart} className="flex-1 bg-pp-primary text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-pp-primary-dark shadow-lg hover:shadow-xl transition-all text-sm">
+              {/* Action Buttons - Distinctive Flipkart colors */}
+              <div className="flex gap-2">
+                <button 
+                  onClick={handleAddToCart} 
+                  className="flex-1 bg-[#ff9f00] text-white py-4 rounded font-bold flex items-center justify-center gap-2 hover:bg-[#fb9200] transition-colors text-sm shadow-sm"
+                >
                   <ShoppingCart className="w-5 h-5" /> ADD TO CART
                 </button>
-                <button onClick={handleBuyNow} className="flex-1 pp-gradient-warm text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-xl shadow-lg transition-all text-sm">
+                <button 
+                  onClick={handleBuyNow} 
+                  className="flex-1 bg-[#fb641b] text-white py-4 rounded font-bold flex items-center justify-center gap-2 hover:bg-[#f4510b] transition-colors text-sm shadow-sm"
+                >
                   <Zap className="w-5 h-5" /> BUY NOW
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Right: Details */}
-          <div className="lg:w-[50%] xl:w-[45%] flex flex-col gap-8">
+          {/* Right Column: Details Scrollable */}
+          <div className="lg:w-[60%] flex flex-col gap-6">
             <div>
               <p className="text-pp-primary text-xs font-bold uppercase tracking-widest mb-1">{product.brand || "Pillipot"}</p>
               <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-relaxed">{product.name}</h1>
@@ -238,6 +224,7 @@ export default function ProductClient({ product }: { product: Product }) {
           </div>
         </div>
       </main>
+    </div>
 
       {/* Fullscreen Zoom Modal */}
       {zoomOpen && (

@@ -28,55 +28,50 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-3xl p-5 flex flex-col group cursor-pointer hover:pp-shadow-hover hover:scale-[1.03] transition-all duration-300 h-full border border-gray-100 relative">
+    <div className="bg-white flex flex-col group cursor-pointer transition-all duration-300 h-full border border-transparent hover:border-gray-200 relative p-4">
       {/* Image */}
       <Link href={`/product/${product.id}`}>
-        <div className="relative w-full aspect-square mb-5 overflow-hidden rounded-2xl bg-gray-50">
+        <div className="relative w-full aspect-[3/4] sm:aspect-square mb-3 overflow-hidden">
           <Image
             src={displayImage}
             alt={product.name}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            className="object-contain transition-transform duration-500 group-hover:scale-105"
           />
-          {discount > 0 && (
-            <div className="absolute top-3 left-3 bg-pp-accent text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-              {discount}% OFF
-            </div>
-          )}
         </div>
       </Link>
 
       {/* Wishlist button */}
       <button
         onClick={(e) => { e.preventDefault(); toggleWishlist(product); }}
-        className={`absolute top-8 right-8 w-10 h-10 rounded-full flex items-center justify-center transition-all shadow-md z-10 ${
-          wishlisted
-            ? "bg-pp-accent text-white scale-110"
-            : "bg-white/90 backdrop-blur-sm text-gray-400 opacity-0 group-hover:opacity-100 hover:bg-white hover:scale-110"
-        }`}
+        className="absolute top-4 right-4 text-gray-300 hover:text-pp-accent transition-colors z-10"
       >
-        <Heart className={`w-5 h-5 ${wishlisted ? "fill-white" : ""}`} />
+        <Heart className={`w-5 h-5 ${wishlisted ? "fill-pp-accent text-pp-accent" : ""}`} />
       </button>
 
       {/* Info */}
-      <Link href={`/product/${product.id}`} className="flex flex-col gap-2 flex-1">
-        <p className="text-xs text-pp-primary font-bold uppercase tracking-widest">{product.brand || "Pillipot"}</p>
-        <h3 className="text-base md:text-lg font-bold text-gray-900 line-clamp-2 leading-tight">
+      <Link href={`/product/${product.id}`} className="flex flex-col gap-1.5 flex-1 items-start text-left">
+        <h3 className="text-sm font-medium text-gray-900 line-clamp-1 group-hover:text-pp-primary transition-colors">
           {product.name}
         </h3>
+        
+        <p className="text-xs text-gray-500 truncate w-full">{product.brand || "Pillipot"}</p>
 
-        <div className="flex items-center gap-2 mt-auto">
-          <div className="bg-pp-success text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1">
-            {rating} <Star className="w-3.5 h-3.5 fill-white" />
+        <div className="flex items-center gap-2">
+          <div className="bg-[#388e3c] text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
+            {rating} <Star className="w-2.5 h-2.5 fill-white" />
           </div>
-          <span className="text-gray-400 text-xs">({reviews.toLocaleString()} reviews)</span>
+          <span className="text-gray-400 text-[11px]">({reviews.toLocaleString()})</span>
         </div>
 
-        <div className="flex items-baseline gap-3 mt-2">
-          <span className="text-xl font-black text-gray-900">{formatPrice(product.price)}</span>
+        <div className="flex items-center gap-2 mt-auto">
+          <span className="text-base font-bold text-gray-900">{formatPrice(product.price)}</span>
           {discount > 0 && (
-            <span className="text-gray-400 text-sm line-through">{formatPrice(originalPrice)}</span>
+            <>
+              <span className="text-gray-400 text-xs line-through">{formatPrice(originalPrice)}</span>
+              <span className="text-[#388e3c] text-xs font-bold">{discount}% off</span>
+            </>
           )}
         </div>
       </Link>

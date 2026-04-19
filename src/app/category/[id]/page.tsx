@@ -17,61 +17,94 @@ export default async function CategoryPage({ params }: { params: Promise<{ id: s
   const categoryName = category?.name || "Category";
 
   return (
-    <div className="flex flex-col min-h-screen bg-pp-surface">
+    <div className="flex flex-col min-h-screen bg-[#f1f3f6]">
       <Header />
       <CategoryBar categories={cList} />
 
-      <main className="flex-1 pp-container px-4 py-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters */}
-          <div className="hidden lg:flex flex-col w-60 shrink-0 gap-4">
-            <div className="bg-white rounded-2xl border border-gray-100 pp-shadow p-5">
-              <h2 className="text-sm font-bold text-gray-900 mb-5 uppercase tracking-wider">Filters</h2>
-              <div className="space-y-6">
-                <div>
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 block">Price Range</span>
+      <main className="flex-1 max-w-[1600px] mx-auto w-full px-2 py-2 sm:px-4 sm:py-4">
+        <div className="flex flex-col lg:flex-row gap-2 sm:gap-4">
+          
+          {/* Filters Sidebar - Flipkart Style */}
+          <aside className="hidden lg:flex flex-col w-[280px] shrink-0 bg-white shadow-sm border border-gray-200">
+            <div className="p-4 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">Filters</h2>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-4 border-b border-gray-100">
+                <span className="text-xs font-bold text-gray-900 uppercase tracking-tight mb-4 block">Categories</span>
+                <nav className="text-sm text-gray-600 space-y-2">
+                  <div className="flex items-center gap-2 cursor-pointer hover:text-pp-primary">
+                    <span className="text-gray-400">‹</span> {categoryName}
+                  </div>
+                </nav>
+              </div>
+
+              <div className="p-4 border-b border-gray-100">
+                <span className="text-xs font-bold text-gray-900 uppercase tracking-tight mb-4 block">Price</span>
+                <div className="px-2">
                   <input type="range" className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-pp-primary" />
-                  <div className="flex justify-between mt-2 text-xs text-gray-400">
-                    <span>₹0</span>
-                    <span>₹1,50,000</span>
+                  <div className="flex justify-between mt-4 text-sm text-gray-600">
+                    <div className="border border-gray-200 rounded px-2 py-1 min-w-[60px]">₹0</div>
+                    <div className="border border-gray-200 rounded px-2 py-1 min-w-[60px]">₹1,50,000+</div>
                   </div>
                 </div>
-                <FilterSection title="Rating" items={["4★ & above", "3★ & above"]} />
-                <FilterSection title="Discount" items={["50% or more", "30% or more", "10% or more"]} />
+              </div>
+
+              <div className="p-4 border-b border-gray-100">
+                <FilterSection title="Customer Ratings" items={["4★ & above", "3★ & above"]} />
+              </div>
+              
+              <div className="p-4">
+                <FilterSection title="Offers" items={["Buy More Save More", "Special Price"]} />
               </div>
             </div>
-          </div>
+          </aside>
 
-          {/* Products */}
-          <div className="flex-1">
-            <div className="mb-5">
-              <nav className="text-xs text-gray-400 mb-1">Home › {categoryName}</nav>
-              <div className="flex items-center justify-between">
-                <h1 className="text-xl font-bold text-gray-900">
-                  {products.length > 0 ? `${categoryName}` : "No Results"}
-                  <span className="text-gray-400 font-normal text-sm ml-2">({products.length} products)</span>
-                </h1>
-                <div className="hidden md:flex items-center gap-4 text-xs font-medium text-gray-500">
-                  <span className="text-pp-primary font-bold border-b-2 border-pp-primary pb-0.5 cursor-pointer">Relevance</span>
-                  <span className="cursor-pointer hover:text-pp-primary">Price ↑</span>
-                  <span className="cursor-pointer hover:text-pp-primary">Price ↓</span>
-                  <span className="cursor-pointer hover:text-pp-primary">Newest</span>
+          {/* Results Area */}
+          <div className="flex-1 bg-white shadow-sm border border-gray-200">
+            {/* Breadcrumbs & Title strip */}
+            <div className="p-4 border-b border-gray-100">
+              <nav className="text-[10px] sm:text-xs text-gray-500 mb-2 flex items-center gap-1">
+                <a href="/">Home</a> <span>›</span> <a href="/">{categoryName}</a>
+              </nav>
+              <h1 className="text-base font-bold text-gray-900">
+                {categoryName}
+                <span className="text-gray-500 font-normal text-xs ml-2">
+                  (Showing {products.length} products)
+                </span>
+              </h1>
+            </div>
+
+            {/* Sort Bar - Mobile friendly */}
+            <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 text-sm overflow-x-auto no-scrollbar whitespace-nowrap">
+              <span className="font-bold text-gray-900 shrink-0">Sort By</span>
+              {["Relevance", "Popularity", "Price -- Low to High", "Price -- High to Low", "Newest First"].map((sort, i) => (
+                <button 
+                  key={sort} 
+                  className={`px-1 py-1 transition-colors ${i === 0 ? "text-pp-primary font-bold border-b-2 border-pp-primary" : "text-gray-600 hover:text-pp-primary"}`}
+                >
+                  {sort}
+                </button>
+              ))}
+            </div>
+
+            {/* Product Grid */}
+            <div className="p-2 sm:p-4">
+              {products.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {products.map((p) => (
+                    <ProductCard key={p.id} product={p} />
+                  ))}
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <p className="text-gray-400 text-lg font-medium mb-4">No products found for this category</p>
+                </div>
+              )}
             </div>
-
-            {products.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8">
-                {products.map((p) => (
-                  <ProductCard key={p.id} product={p} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <p className="text-gray-400 text-lg font-medium mb-4">No products found in &quot;{categoryName}&quot;</p>
-              </div>
-            )}
           </div>
+
         </div>
       </main>
 
