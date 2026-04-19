@@ -43,54 +43,53 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
       >
         {banners.map((banner) => (
           <SwiperSlide key={banner.id}>
-            <div className="relative w-full overflow-hidden pp-gradient group cursor-pointer aspect-[16/9] md:aspect-[21/9] lg:min-h-[380px]">
-              <div className="pp-container h-full px-6 lg:px-12">
-                <div className="flex flex-col md:flex-row items-center h-full">
-                  {/* Text Content */}
-                  <div className="p-8 md:p-10 lg:p-14 flex-1 z-10 text-center md:text-left">
-                    <div className="flex items-center gap-2 mb-3 justify-center md:justify-start">
-                      <Zap className="w-5 h-5 text-yellow-300 animate-pulse" />
-                      <span className="text-white/80 text-xs font-bold uppercase tracking-widest">Limited Time Offer</span>
-                    </div>
-                    <h2 className="text-3xl md:text-4xl lg:text-6xl font-black text-white leading-tight mb-4 drop-shadow-md">
-                      {banner.title}
-                    </h2>
-                    {banner.description && (
-                      <p className="text-white/80 text-sm md:text-lg mb-8 max-w-md line-clamp-2 md:line-clamp-none">
-                        {banner.description}
-                      </p>
-                    )}
-                    {banner.linkUrl && (
-                      <Link 
-                        href={banner.linkUrl} 
-                        className="inline-flex items-center gap-2 bg-white text-pp-primary px-10 py-4 rounded-2xl font-black hover:shadow-2xl hover:scale-105 transition-all text-base active:scale-95 shadow-lg group"
-                      >
-                        Shop Now 
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    )}
-                  </div>
+            <Link href={banner.linkUrl || "#"} className="block relative w-full h-full group cursor-pointer aspect-[16/9] md:aspect-[21/9] lg:min-h-[440px]">
+              {/* Background Image - Full Width & Height */}
+              <div className="absolute inset-0 z-0">
+                <Image
+                  src={banner.imageUrl}
+                  alt={banner.title}
+                  fill
+                  sizes="100vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  priority
+                />
+              </div>
 
-                  {/* Image Content */}
-                  <div className="relative w-full md:w-[45%] h-full min-h-[220px] md:min-h-0 flex items-center justify-center">
-                    <div className="relative w-full h-full md:h-[90%] lg:h-full scale-100 group-hover:scale-105 transition-transform duration-700">
-                      <Image
-                        src={banner.imageUrl}
-                        alt={banner.title}
-                        fill
-                        sizes="(max-width: 768px) 100vw, 45vw"
-                        className="object-contain drop-shadow-2xl"
-                        priority
-                      />
-                    </div>
+              {/* Overlay Gradient for Text Readability */}
+              <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
+
+              {/* Text Content - Positioned Left */}
+              <div className="relative z-20 h-full pp-container px-6 lg:px-12 flex flex-col justify-center">
+                <div className="max-w-xl text-left">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Zap className="w-5 h-5 text-yellow-300 animate-pulse" />
+                    <span className="text-white/90 text-xs font-bold uppercase tracking-[0.2em] drop-shadow-sm">
+                      Limited Time Offer
+                    </span>
                   </div>
+                  
+                  <h2 className="text-3xl md:text-5xl lg:text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-lg">
+                    {banner.title}
+                  </h2>
+                  
+                  {banner.description && (
+                    <p className="text-white/80 text-sm md:text-xl mb-10 max-w-md line-clamp-3 md:line-clamp-none drop-shadow-md font-medium leading-relaxed">
+                      {banner.description}
+                    </p>
+                  )}
+                  
+                  {banner.linkUrl && (
+                    <div className="pt-2">
+                       <span className="inline-flex items-center gap-3 bg-white text-pp-primary px-10 py-4 rounded-2xl font-black hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] hover:bg-pp-primary hover:text-white transition-all duration-300 text-base shadow-xl group/btn">
+                        Shop Now 
+                        <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-              
-              {/* Subtle Decorative Elements */}
-              <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-[-15deg] translate-x-1/2 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-1/4 h-1/2 bg-yellow-400/10 blur-3xl pointer-events-none" />
-            </div>
+            </Link>
           </SwiperSlide>
         ))}
       </Swiper>
