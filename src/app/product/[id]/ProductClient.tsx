@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useRef } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { type Product } from "@/lib/api";
 import Image from "next/image";
 import { Star, ShoppingCart, Zap, ShieldCheck, Tag, Truck, RotateCcw, Heart, Share2, X, ChevronLeft, ChevronRight, ZoomIn, Play } from "lucide-react";
@@ -15,6 +15,10 @@ export default function ProductClient({ product }: { product: Product }) {
   const { addToCart } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { user, setIsLoginModalOpen } = useAuth();
+  
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [product.id]);
   
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
