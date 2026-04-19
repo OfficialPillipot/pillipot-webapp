@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { getProduct, type Product } from "@/lib/api";
@@ -20,6 +20,10 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const [isHoverZoom, setIsHoverZoom] = useState(false);
+  const imageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function load() {
@@ -39,12 +43,9 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
   if (!product) notFound();
 
   const allImages = [product.imageUrl, product.imageUrl2, product.imageUrl3].filter(Boolean) as string[];
-  if (allImages.length === 0) allImages.push("https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?auto=format&fit=crop&q=80&w=600");
-
-  const [zoomOpen, setZoomOpen] = useState(false);
-  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
-  const [isHoverZoom, setIsHoverZoom] = useState(false);
-  const imageRef = useRef<HTMLDivElement>(null);
+  if (allImages.length === 0) {
+    allImages.push(`data:image/svg+xml;base64,${btoa('<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="800" fill="#F3F4FB"/><path d="M400 330V470M330 400H470" stroke="#D1D5DB" stroke-width="4" stroke-linecap="round"/><circle cx="400" cy="400" r="100" stroke="#D1D5DB" stroke-width="4" stroke-dasharray="8 8"/><text x="400" y="550" text-anchor="middle" fill="#9CA3AF" font-family="sans-serif" font-size="20" font-weight="600" letter-spacing="0.1em">NO IMAGE AVAILABLE</text></svg>')}`);
+  }
 
   const handleAddToCart = () => addToCart(product);
   const handleBuyNow = () => { addToCart(product); router.push("/checkout"); };
@@ -77,9 +78,9 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
           <span className="text-gray-700 font-medium truncate max-w-[200px]">{product.name}</span>
         </nav>
 
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-16 xl:gap-24">
           {/* Left: Gallery */}
-          <div className="lg:w-[45%] flex flex-col sm:flex-row gap-3">
+          <div className="lg:w-[50%] xl:w-[55%] flex flex-col sm:flex-row gap-5">
             {/* Thumbnails */}
             <div className="flex sm:flex-col gap-2 order-2 sm:order-1 overflow-x-auto sm:overflow-y-auto no-scrollbar sm:max-h-[500px]">
               {allImages.map((img, i) => (
@@ -160,25 +161,25 @@ export default function ProductDetail({ params }: { params: Promise<{ id: string
           </div>
 
           {/* Right: Details */}
-          <div className="lg:w-[55%] flex flex-col gap-5">
+          <div className="lg:w-[50%] xl:w-[45%] flex flex-col gap-8">
             <div>
-              <p className="text-pp-primary text-xs font-bold uppercase tracking-widest mb-1">{product.brand}</p>
+              <p className="text-pp-primary text-xs font-bold uppercase tracking-widest mb-1">{product.brand || "Pillipot"}</p>
               <h1 className="text-xl md:text-2xl font-bold text-gray-900 leading-relaxed">{product.name}</h1>
             </div>
 
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1 bg-pp-success text-white text-sm font-bold px-2.5 py-1 rounded-lg">
-                {product.rating} <Star className="w-3.5 h-3.5 fill-white" />
+                {product.rating || 0} <Star className="w-3.5 h-3.5 fill-white" />
               </div>
-              <span className="text-gray-500 text-sm">{product.reviews.toLocaleString()} ratings & reviews</span>
+              <span className="text-gray-500 text-sm">{(product.reviews || 0).toLocaleString()} ratings & reviews</span>
             </div>
 
             <div className="flex items-baseline gap-3">
               <span className="text-3xl font-black text-gray-900">{formatPrice(product.price)}</span>
-              {product.discount > 0 && (
+              {(product.discount ?? 0) > 0 && (
                 <>
-                  <span className="text-gray-400 line-through text-lg">{formatPrice(product.originalPrice)}</span>
-                  <span className="text-pp-success text-base font-bold">Save {formatPrice(product.originalPrice - product.price)}</span>
+                  <span className="text-gray-400 line-through text-lg">{formatPrice(product.originalPrice || product.price)}</span>
+                  <span className="text-pp-success text-base font-bold">Save {formatPrice((product.originalPrice || product.price) - product.price)}</span>
                 </>
               )}
             </div>

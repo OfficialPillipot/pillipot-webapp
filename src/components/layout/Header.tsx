@@ -6,15 +6,19 @@ import { useRouter, usePathname } from "next/navigation";
 import { Search, ShoppingCart, User, Heart, Menu, X, Home, Package } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { useAuth } from "@/context/AuthContext";
+import { LogOut } from "lucide-react";
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
+  const { user, logout } = useAuth();
   const [search, setSearch] = React.useState("");
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
+  const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,10 +75,35 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2 lg:gap-3">
-            <Link href="/orders" className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium">
-              <User className="w-4 h-4" />
-              <span className="hidden lg:inline">Account</span>
-            </Link>
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium"
+                >
+                  <User className="w-4 h-4" />
+                  <span>{user.name}</span>
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-[60] animate-in fade-in slide-in-from-top-2">
+                    <Link href="/orders" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
+                      <Package className="w-4 h-4" /> My Orders
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4" /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link href="/login" className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium">
+                <User className="w-4 h-4" />
+                <span className="hidden lg:inline">Login</span>
+              </Link>
+            )}
 
             <Link href="/wishlist" className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium relative">
               <Heart className="w-4 h-4" />
@@ -138,7 +167,6 @@ export default function Header() {
                 { label: "My Orders", href: "/orders", icon: Package },
                 { label: "My Wishlist", href: "/wishlist", icon: Heart },
                 { label: "My Cart", href: "/cart", icon: ShoppingCart },
-                { label: "My Account", href: "/orders", icon: User },
               ].map((item) => (
                 <Link
                   key={item.label}
@@ -154,6 +182,22 @@ export default function Header() {
                   {item.label}
                 </Link>
               ))}
+              {user ? (
+                <button
+                  onClick={() => { logout(); setMenuOpen(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+                >
+                  <LogOut className="w-5 h-5" /> Logout
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-pp-primary hover:bg-violet-50 transition-all"
+                >
+                  <User className="w-5 h-5" /> Login
+                </Link>
+              )}
             </nav>
           </div>
         </div>
