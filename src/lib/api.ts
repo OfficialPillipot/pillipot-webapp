@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/v1/api";
+const isProd = process.env.NODE_ENV === "production";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || (isProd ? "https://api.pillipot.com/v1/api" : "http://localhost:3000/v1/api");
 
 export interface Category {
   id: string;
