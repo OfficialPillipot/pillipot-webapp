@@ -20,7 +20,7 @@ export default function HomeLoading() {
 
       <main className="flex-1 pp-container px-4 py-8">
         {/* Banner Skeleton */}
-        <div className="w-full h-[260px] md:h-[340px] bg-gray-200 animate-pulse rounded-3xl mb-12" />
+        <div className="w-full h-[200px] md:h-[280px] bg-gray-200 animate-pulse rounded-3xl mb-12" />
         
         {/* Badges Skeleton */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">

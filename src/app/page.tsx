@@ -48,7 +48,7 @@ export default async function Home() {
         <div className="px-4 md:px-6 lg:px-8 pt-6">
           <div className="relative w-full overflow-hidden mb-12 pp-gradient group cursor-pointer shadow-lg rounded-3xl">
             <div className="pp-container px-6 lg:px-12">
-              <div className="flex flex-col md:flex-row items-center min-h-[260px] md:min-h-[340px]">
+              <div className="flex flex-col md:flex-row items-center min-h-[200px] md:min-h-[280px]">
                 <div className="p-8 md:p-10 lg:p-14 flex-1 z-10">
                   <div className="flex items-center gap-2 mb-3">
                     <Zap className="w-5 h-5 text-yellow-300" />
@@ -64,7 +64,7 @@ export default async function Home() {
                     Shop Now <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
-                <div className="relative w-full md:w-[40%] h-56 md:h-[400px]">
+                <div className="relative w-full md:w-[40%] h-48 md:h-[320px]">
                   <Image
                     src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=800"
                     alt="Flash Sale"
