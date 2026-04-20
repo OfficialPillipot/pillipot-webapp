@@ -67,8 +67,15 @@ export default function ProductClient({ product }: { product: Product }) {
     <div className="bg-[#f1f3f6] min-h-screen">
       <main className="max-w-[1280px] mx-auto bg-white min-h-screen shadow-sm border-x border-gray-200">
         
-        {/* Breadcrumb - Flipkart style top padding */}
-        <div className="px-4 pt-4">
+        {/* Breadcrumb & Back Button */}
+        <div className="px-4 pt-4 flex items-center justify-between">
+          <button 
+            onClick={() => router.back()}
+            className="group flex items-center gap-1 text-gray-500 hover:text-pp-primary transition-all text-xs font-medium bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100 hover:border-pp-primary/30 hover:bg-pp-primary/[0.02]"
+          >
+            <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" /> 
+            Back
+          </button>
           <nav className="text-xs text-gray-500 flex items-center gap-1.5 opacity-80">
             <a href="/" className="hover:text-blue-600">Home</a>
             <span className="text-gray-300">›</span>
@@ -132,17 +139,17 @@ export default function ProductClient({ product }: { product: Product }) {
                 </div>
               </div>
 
-              {/* Action Buttons - Distinctive Flipkart colors */}
-              <div className="flex gap-2">
+              {/* Action Buttons - Brand Matching Colors */}
+              <div className="flex gap-3">
                 <button 
                   onClick={handleAddToCart} 
-                  className="flex-1 bg-[#ff9f00] text-white py-4 rounded font-bold flex items-center justify-center gap-2 hover:bg-[#fb9200] transition-colors text-sm shadow-sm"
+                  className="flex-1 bg-white text-pp-primary border-2 border-pp-primary py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-pp-primary/5 transition-all duration-300 text-sm shadow-sm"
                 >
                   <ShoppingCart className="w-5 h-5" /> ADD TO CART
                 </button>
                 <button 
                   onClick={handleBuyNow} 
-                  className="flex-1 bg-[#fb641b] text-white py-4 rounded font-bold flex items-center justify-center gap-2 hover:bg-[#f4510b] transition-colors text-sm shadow-sm"
+                  className="flex-1 pp-gradient text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:shadow-[0_10px_20px_rgba(108,60,225,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 text-sm"
                 >
                   <Zap className="w-5 h-5" /> BUY NOW
                 </button>
