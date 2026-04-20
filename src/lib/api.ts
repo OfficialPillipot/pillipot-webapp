@@ -50,10 +50,15 @@ export async function getCategories(): Promise<Category[]> {
   return res.json();
 }
 
-export async function getProducts(categoryId?: string): Promise<Product[]> {
-  const url = categoryId 
-    ? `${API_URL}/customer/products?categoryId=${categoryId}`
+export async function getProducts(categoryId?: string, search?: string): Promise<Product[]> {
+  const params = new URLSearchParams();
+  if (categoryId) params.append("categoryId", categoryId);
+  if (search) params.append("search", search);
+  
+  const url = params.toString() 
+    ? `${API_URL}/customer/products?${params.toString()}`
     : `${API_URL}/customer/products`;
+    
   const res = await fetch(url, { next: { revalidate: 60 } });
   if (!res.ok) return [];
   return res.json();

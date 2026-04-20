@@ -20,10 +20,17 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [userMenuOpen, setUserMenuOpen] = React.useState(false);
 
+  // Sync search input with URL query param
+  React.useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const q = searchParams.get("q");
+    if (q) setSearch(q);
+  }, [pathname]);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
-      router.push(`/category/${encodeURIComponent(search.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(search.trim())}`);
       setSearchOpen(false);
     }
   };
