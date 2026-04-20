@@ -30,10 +30,10 @@ export default function Footer() {
             <ShieldCheck className="w-6 h-6 text-pp-accent" />
             <span><b className="text-white">100%</b> Authentic Products</span>
           </div>
-          <div className="flex items-center gap-3 text-sm text-white/70">
+          {/* <div className="flex items-center gap-3 text-sm text-white/70">
             <Truck className="w-6 h-6 text-pp-accent-warm" />
             <span><b className="text-white">Free Shipping</b> above ₹499</span>
-          </div>
+          </div> */}
           <div className="flex items-center gap-3 text-sm text-white/70">
             <CreditCard className="w-6 h-6 text-pp-success" />
             <span><b className="text-white">Secure</b> Payments</span>
