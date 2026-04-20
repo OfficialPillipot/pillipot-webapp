@@ -21,7 +21,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
   if (!banners || banners.length === 0) return null;
 
   return (
-    <div className="px-4 md:px-6 lg:px-30 ">
+    <div className="px-4 md:px-6 lg:px-30 pt-2">
       <Swiper
         spaceBetween={30}
         centeredSlides={true}
@@ -69,9 +69,9 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
                     </span>
                   </div>
 
-                  <h2 className="text-3xl md:text-5xl lg:text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-lg">
+                  {/* <h2 className="text-3xl md:text-5xl lg:text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-lg">
                     {banner.title}
-                  </h2>
+                  </h2> */}
 
                   {banner.description && (
                     <p className="text-white/80 text-sm md:text-xl mb-10 max-w-md line-clamp-3 md:line-clamp-none drop-shadow-md font-medium leading-relaxed">
@@ -81,7 +81,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
 
                   {banner.linkUrl && (
                     <div className="pt-2">
-                      <span className="inline-flex items-center gap-3 bg-white text-pp-primary px-10 py-4 rounded-2xl font-black hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] hover:bg-pp-primary hover:text-white transition-all duration-300 text-base shadow-xl group/btn">
+                      <span className="inline-flex items-center gap-3 bg-white text-pp-primary px-5 py-4 rounded-lg font-black hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] hover:bg-pp-primary hover:text-white transition-all duration-300 text-base shadow-xl group/btn">
                         Shop Now
                         <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                       </span>

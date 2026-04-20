@@ -23,13 +23,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ id: s
 
       <main className="flex-1 max-w-[1600px] mx-auto w-full px-2 py-2 sm:px-4 sm:py-4">
         <div className="flex flex-col lg:flex-row gap-2 sm:gap-4">
-          
+
           {/* Filters Sidebar - Flipkart Style */}
           <aside className="hidden lg:flex flex-col w-[280px] shrink-0 bg-white shadow-sm border border-gray-200">
             <div className="p-4 border-b border-gray-100">
               <h2 className="text-lg font-bold text-gray-900">Filters</h2>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto">
               <div className="p-4 border-b border-gray-100">
                 <span className="text-xs font-bold text-gray-900 uppercase tracking-tight mb-4 block">Categories</span>
@@ -54,7 +54,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ id: s
               <div className="p-4 border-b border-gray-100">
                 <FilterSection title="Customer Ratings" items={["4★ & above", "3★ & above"]} />
               </div>
-              
+
               <div className="p-4">
                 <FilterSection title="Offers" items={["Buy More Save More", "Special Price"]} />
               </div>
@@ -80,8 +80,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ id: s
             <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 text-sm overflow-x-auto no-scrollbar whitespace-nowrap">
               <span className="font-bold text-gray-900 shrink-0">Sort By</span>
               {["Relevance", "Popularity", "Price -- Low to High", "Price -- High to Low", "Newest First"].map((sort, i) => (
-                <button 
-                  key={sort} 
+                <button
+                  key={sort}
                   className={`px-1 py-1 transition-colors ${i === 0 ? "text-pp-primary font-bold border-b-2 border-pp-primary" : "text-gray-600 hover:text-pp-primary"}`}
                 >
                   {sort}

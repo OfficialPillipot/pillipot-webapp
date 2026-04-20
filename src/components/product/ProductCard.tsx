@@ -42,7 +42,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
 
           {/* ⭐ Rating bottom-right */}
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-[#388e3c] text-white text-[10px] px-1.5 py-0.5 rounded">
+          <div className="absolute bottom-1 right-2 flex items-center gap-1 bg-[#388e3c] text-white text-[10px] px-1.5 py-0.5 rounded">
             {rating}
             <Star className="w-2.5 h-2.5 fill-white" />
             {/* <span className="text-gray-200 text-[10px]">

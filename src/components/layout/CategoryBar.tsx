@@ -54,7 +54,7 @@ export default function CategoryBar({ categories }: { categories: Category[] }) 
 
   return (
     <div className="bg-white pp-shadow border-b border-gray-100">
-      <div className="pp-container flex items-center justify-start    gap-8 overflow-x-auto no-scrollbar py-3">
+      <div className="pp-container flex items-center justify-start    gap-2 overflow-x-auto no-scrollbar py-2">
         {displayCategories.map((cat) => {
           const Icon = cat.icon;
           const active = isActive(cat.href);
@@ -62,14 +62,14 @@ export default function CategoryBar({ categories }: { categories: Category[] }) 
             <Link
               key={cat.name}
               href={cat.href}
-              className={`flex flex-col items-center gap-2 min-w-[72px] cursor-pointer group ${active ? "scale-105" : ""}`}
+              className={`flex flex-col items-center gap-1 min-w-[72px] cursor-pointer group ${active ? "scale-105" : ""}`}
             >
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${cat.color} flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300 overflow-hidden ${active ? "ring-2 ring-offset-2 ring-pp-primary shadow-md scale-110" : ""
+              <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${cat.color} flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-110 transition-all duration-300 overflow-hidden ${active ? "ring-2 ring-offset-2 ring-pp-primary shadow-md scale-90" : ""
                 }`}>
                 {(cat as any).imageUrl ? (
                   <Image src={(cat as any).imageUrl} alt={cat.name} width={48} height={48} className="w-full h-full object-cover" />
                 ) : (
-                  <Icon className="w-5 h-5 text-white" />
+                  <Icon className="w-4 h-4 text-white" />
                 )}
               </div>
               <span className={`text-[11px] font-semibold transition-colors text-center leading-tight ${active ? "text-pp-primary font-bold" : "text-gray-600 group-hover:text-pp-primary"
