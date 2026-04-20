@@ -6,7 +6,7 @@ import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Trash2, Plus, Minus, ShieldCheck, ArrowRight, ShoppingBag } from "lucide-react";
+import { Trash2, Plus, Minus, ShieldCheck, ArrowRight, ShoppingBag, Package } from "lucide-react";
 
 export default function CartPage() {
   const router = useRouter();
@@ -62,14 +62,18 @@ export default function CartPage() {
                 }`}
               >
                 <div className="flex items-center gap-4">
-                  <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                    <Image
-                      src={item.imageUrl || "/placeholder.png"}
-                      alt={item.name}
-                      fill
-                      sizes="96px"
-                      className="object-cover"
-                    />
+                  <div className="relative w-24 h-24 rounded-xl overflow-hidden bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
+                    {item.imageUrl ? (
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.name}
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <Package className="w-8 h-8 text-gray-300" />
+                    )}
                   </div>
                   {/* Quantity */}
                   <div className="flex flex-col items-center gap-2">

@@ -53,7 +53,7 @@ export default function CategoryBar({ categories }: { categories: Category[] }) 
   };
 
   return (
-    <div className="bg-white pp-shadow border-b border-gray-100">
+    <div className="bg-white pp-shadow border-b border-gray-100 sticky top-14 md:top-16 z-40">
       <div className="pp-container flex items-center justify-start    gap-2 overflow-x-auto no-scrollbar py-2">
         {displayCategories.map((cat) => {
           const Icon = cat.icon;

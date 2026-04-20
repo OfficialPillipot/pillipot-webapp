@@ -180,3 +180,90 @@ export async function clearCartApi(token: string): Promise<boolean> {
   });
   return res.ok;
 }
+export interface CustomerAddress {
+  id: string;
+  customerName: string;
+  deliveryAddress: string;
+  phone: string;
+  secondaryPhone?: string;
+  pincode: string;
+  postOffice: string;
+  email?: string;
+  state: string;
+  district: string;
+  isDefault: boolean;
+  addressType: string;
+}
+
+export async function getAddresses(token: string): Promise<CustomerAddress[]> {
+  const res = await fetch(`${API_URL}/customer/addresses`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function addAddress(token: string, data: Partial<CustomerAddress>): Promise<CustomerAddress | null> {
+  const res = await fetch(`${API_URL}/customer/addresses`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function autofillAddress(phone: string): Promise<any | null> {
+  const res = await fetch(`${API_URL}/customer/autofill?phone=${phone}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function checkout(cart: any[], customerInfo: any): Promise<{ orderId: string } | null> {
+  const res = await fetch(`${API_URL}/orders/checkout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cart, customerInfo }),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function deleteAddress(token: string, id: string): Promise<boolean> {
+  const res = await fetch(`${API_URL}/customer/addresses/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.ok;
+}
+
+export async function setDefaultAddress(token: string, id: string): Promise<boolean> {
+  const res = await fetch(`${API_URL}/customer/addresses/${id}/default`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.ok;
+}
+export async function updateAddress(token: string, id: string, data: Partial<CustomerAddress>): Promise<CustomerAddress | null> {
+  const res = await fetch(`${API_URL}/customer/addresses/${id}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function getMyOrders(token: string): Promise<any[]> {
+  const res = await fetch(`${API_URL}/orders/my-orders`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) return [];
+  return res.json();
+}

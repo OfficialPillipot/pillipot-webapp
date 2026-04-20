@@ -43,7 +43,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
       >
         {banners.map((banner) => (
           <SwiperSlide key={banner.id}>
-            <Link href={banner.linkUrl || "#"} className="block relative w-full h-full group cursor-pointer aspect-[16/7] md:aspect-[22/5] lg:min-h-[280px]">
+            <Link href={banner.linkUrl || "#"} className="block relative w-full h-full group cursor-pointer aspect-[21/9] md:aspect-[3/1] lg:min-h-[280px]">
               {/* Background Image - Full Width & Height */}
               <div className="absolute inset-0 z-0">
                 <Image
