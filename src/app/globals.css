@@ -71,7 +71,7 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-outfit), system-ui, -apple-system, sans-serif;
   background: var(--color-pp-surface);
   padding-bottom: 56px; /* space for mobile bottom nav */
 }

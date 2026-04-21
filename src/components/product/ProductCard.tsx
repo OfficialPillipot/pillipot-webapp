@@ -28,25 +28,28 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <div className="bg-white flex flex-col group cursor-pointer transition-all duration-300 h-full border border-transparent hover:border-gray-200 relative p-4">
+    <div className="bg-white flex flex-col group cursor-pointer transition-all duration-300 h-full border border-gray-100/60 rounded-2xl hover:border-pp-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 relative p-3 sm:p-4 overflow-hidden">
+      
+      {/* Soft gradient background behind image for premium look */}
+      <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-gray-50/50 to-transparent z-0 rounded-t-2xl pointer-events-none" />
 
       {/* Image */}
-      <Link href={`/product/${product.id}`}>
-        <div className="relative w-full aspect-[3/4] sm:aspect-square mb-3 overflow-hidden">
+      <Link href={`/product/${product.id}`} className="z-10 block">
+        <div className="relative w-full aspect-[4/5] sm:aspect-square mb-4 overflow-hidden rounded-xl bg-[#F8F9FA] flex items-center justify-center p-2 group-hover:bg-white transition-colors duration-500">
           <Image
             src={displayImage}
             alt={product.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-            className="object-contain transition-transform duration-500 group-hover:scale-105"
+            className="object-contain transition-transform duration-700 group-hover:scale-110 mix-blend-multiply"
           />
 
-          {/* ⭐ Rating bottom-right */}
-          <div className="absolute bottom-1 right-2 flex items-center gap-1 bg-[#388e3c] text-white text-[10px] px-1.5 py-0.5 rounded">
+          {/* ⭐ Rating bottom-left instead of right for better balance */}
+          <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-md shadow-sm border border-gray-100 text-gray-800 font-bold text-[11px] px-2 py-0.5 rounded-lg z-20">
             {rating}
-            <Star className="w-2.5 h-2.5 fill-white" />
+            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
             {reviewsCount > 0 && (
-              <span className="text-gray-200 text-[8px] border-l border-white/20 pl-1 ml-0.5">
+              <span className="text-gray-400 text-[10px] font-medium border-l border-gray-200 pl-1.5 ml-0.5">
                 {reviewsCount}
               </span>
             )}
@@ -54,40 +57,44 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
 
-      {/* Wishlist button */}
+      {/* Wishlist button (Floating) */}
       <button
         onClick={(e) => {
           e.preventDefault();
           toggleWishlist(product);
         }}
-        className="absolute top-4 right-4 text-gray-300 hover:text-pp-accent transition-colors z-10"
+        className={`absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 transition-all duration-300 z-20 ${wishlisted ? "scale-110" : "text-gray-300 hover:text-pp-accent hover:scale-110"}`}
       >
         <Heart
-          className={`w-5 h-5 ${wishlisted ? "fill-pp-accent text-pp-accent" : ""
-            }`}
+          className={`w-4 h-4 ${wishlisted ? "fill-pp-accent text-pp-accent" : ""}`}
         />
       </button>
 
       {/* Info */}
       <Link
         href={`/product/${product.id}`}
-        className="flex flex-col gap-1.5 flex-1 items-start text-left"
+        className="flex flex-col gap-1.5 flex-1 items-start text-left z-10 px-1 pb-1"
       >
-        <h3 className="text-sm font-medium text-gray-900 line-clamp-1 group-hover:text-pp-primary transition-colors">
+        {product.brand && (
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-pp-primary/80">
+            {product.brand}
+          </span>
+        )}
+        <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-tight group-hover:text-pp-primary transition-colors">
           {product.name}
         </h3>
 
-        <div className="flex items-center gap-2 mt-auto">
-          <span className="text-base font-bold text-gray-900">
+        <div className="flex items-center flex-wrap gap-x-2.5 gap-y-1 mt-auto pt-2">
+          <span className="text-base sm:text-lg font-black text-gray-900 tracking-tight">
             {formatPrice(product.price)}
           </span>
 
           {discount > 0 && (
             <>
-              <span className="text-gray-400 text-xs line-through">
+              <span className="text-gray-400 text-xs sm:text-sm line-through font-medium">
                 {formatPrice(originalPrice)}
               </span>
-              <span className="text-[#388e3c] text-xs font-bold">
+              <span className="text-pp-success text-[10px] sm:text-xs font-black uppercase tracking-wider bg-pp-success/10 px-1.5 py-0.5 rounded-md">
                 {discount}% off
               </span>
             </>

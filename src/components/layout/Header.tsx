@@ -51,8 +51,8 @@ export default function Header() {
 
   return (
     <>
-      <header className="pp-gradient sticky top-0 z-50">
-        <div className="pp-container w-full flex items-center   h-14 md:h-16 gap-3 lg:gap-8">
+      <header className="pp-gradient sticky top-0 z-50 shadow-lg shadow-pp-primary/10 backdrop-blur-xl bg-opacity-90">
+        <div className="pp-container w-full flex items-center h-16 md:h-[72px] gap-3 lg:gap-8">
           {/* Mobile menu button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -62,13 +62,13 @@ export default function Header() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-1.5 shrink-0">
-            <div className="w-7 h-7 md:w-8 md:h-8 bg-white rounded-lg flex items-center justify-center transition-transform hover:rotate-3 shadow-lg shadow-white/10">
-              <span className="text-pp-primary font-black text-base md:text-lg">P</span>
+          <Link href="/" className="flex items-center gap-2 lg:gap-2.5 shrink-0 group">
+            <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl flex items-center justify-center transition-all duration-300 md:group-hover:rotate-6 group-hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+              <span className="text-pp-primary font-black text-xl md:text-2xl" style={{ fontFamily: "var(--font-outfit)" }}>P</span>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-white font-extrabold text-base md:text-lg tracking-tight hover:text-white/90 transition-colors">pillipot</span>
-              <span className="text-white/60 text-[9px] md:text-[10px] font-medium tracking-widest uppercase hidden sm:block">marketplace</span>
+              <span className="text-white font-extrabold text-lg md:text-2xl tracking-tight transition-transform duration-300 group-hover:translate-x-0.5" style={{ fontFamily: "var(--font-outfit)" }}>pillipot</span>
+              <span className="text-white/70 text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase hidden sm:block mt-0.5">marketplace</span>
             </div>
           </Link>
 
