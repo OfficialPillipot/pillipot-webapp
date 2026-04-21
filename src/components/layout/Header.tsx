@@ -14,7 +14,7 @@ export default function Header() {
   const pathname = usePathname();
   const { cartCount } = useCart();
   const { wishlistCount } = useWishlist();
-  const { user, logout } = useAuth();
+  const { user, logout, setIsLoginModalOpen } = useAuth();
   const [search, setSearch] = React.useState("");
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [searchOpen, setSearchOpen] = React.useState(false);
@@ -140,10 +140,15 @@ export default function Header() {
                 )}
               </div>
             ) : (
-              <Link href="/login" className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium">
-                <User className="w-4 h-4" />
+              <button 
+                onClick={() => setIsLoginModalOpen(true)}
+                className="flex items-center gap-2 text-white/90 hover:text-white px-4 py-2 rounded-xl hover:bg-white/10 transition-all text-sm font-bold border border-white/20 active:scale-95 shadow-lg shadow-black/5"
+              >
+                <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center">
+                  <User className="w-3.5 h-3.5" />
+                </div>
                 <span className="hidden lg:inline">Login</span>
-              </Link>
+              </button>
             )}
 
             <Link href="/wishlist" className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium relative">
