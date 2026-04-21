@@ -4,17 +4,27 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useAuth } from "@/context/AuthContext";
-import { getMyOrders, cancelOrderApi } from "@/lib/api";
-import { Package, Calendar, MapPin, ChevronRight, ShoppingBag, Loader2, Search, RotateCcw, AlertTriangle } from "lucide-react";
+import { getMyOrders, cancelOrderApi, downloadInvoice } from "@/lib/api";
+import { Package, Calendar, MapPin, ChevronRight, ShoppingBag, Loader2, Search, RotateCcw, AlertTriangle, Star, X, CheckCircle2, XCircle, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { submitReview } from "@/lib/api";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/context/ToastContext";
 
 export default function MyOrdersPage() {
   const { token, user } = useAuth();
+  const { addToCart } = useCart();
+  const { success, error } = useToast();
   const [orders, setOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewingProduct, setReviewingProduct] = useState<{ id: string; name: string; imageUrl?: string } | null>(null);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,13 +51,41 @@ export default function MyOrdersPage() {
     if (!selectedOrderId || !token) return;
     
     setIsCancelling(true);
-    const success = await cancelOrderApi(token, selectedOrderId);
-    if (success) {
+    const apiSuccess = await cancelOrderApi(token, selectedOrderId);
+    if (apiSuccess) {
       await loadOrders();
       setShowCancelModal(false);
       setSelectedOrderId(null);
+      success("Order cancelled successfully");
+    } else {
+      error("Failed to cancel order");
     }
     setIsCancelling(false);
+  };
+  
+  const handleReviewClick = (product: { id: string; name: string; imageUrl?: string }) => {
+    setReviewingProduct(product);
+    setRating(0);
+    setComment("");
+    setShowReviewModal(true);
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!token || !reviewingProduct || rating === 0) return;
+
+    setIsSubmittingReview(true);
+    try {
+      await submitReview(token, reviewingProduct.id, rating, comment);
+      setShowReviewModal(false);
+      setReviewingProduct(null);
+      success("Review submitted successfully!");
+    } catch (err) {
+      console.error(err);
+      error("Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const formatPrice = (num: number) =>
@@ -145,21 +183,41 @@ export default function MyOrdersPage() {
                   <div className="text-right">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 leading-none">Order # {order.orderId}</p>
                     <div className="flex justify-end gap-3 mt-1 underline-offset-4 decoration-pp-primary/30">
-                      <button className="text-xs font-bold text-pp-primary hover:underline">Order details</button>
+                      <button 
+                        onClick={() => router.push(`/orders/${order.orderId}`)}
+                        className="text-xs font-bold text-pp-primary hover:underline"
+                      >
+                        Order details
+                      </button>
                       <span className="text-gray-300">|</span>
-                      <button className="text-xs font-bold text-pp-primary hover:underline">Invoice</button>
+                      <button 
+                        onClick={() => downloadInvoice(token!, order.orderId)}
+                        className="text-xs font-bold text-pp-primary hover:underline"
+                      >
+                        Invoice
+                      </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Body */}
-                <div className="p-6">
+                 <div className="p-6">
                   <div className="flex flex-col lg:flex-row gap-8">
                     <div className="flex-1 space-y-6">
                       <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${order.status.toLowerCase() === 'delivered' ? 'bg-green-500' : 'bg-pp-primary-dark shadow-[0_0_8px_rgba(79,31,191,0.4)]'}`} />
+                        {order.status.toLowerCase() === 'delivered' ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-500" />
+                        ) : order.status.toLowerCase() === 'cancelled' ? (
+                          <XCircle className="w-5 h-5 text-red-500" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-pp-primary" />
+                        )}
                         <h3 className="text-lg font-black text-gray-900">
-                          {order.status.toLowerCase() === 'delivered' ? 'Delivered' : `Arriving soon (Status: ${order.status})`}
+                          {order.status.toLowerCase() === 'delivered' 
+                            ? 'Delivered' 
+                            : order.status.toLowerCase() === 'cancelled' 
+                              ? 'Status: Cancelled' 
+                              : `Arriving soon (Status: ${order.status})`}
                         </h3>
                       </div>
 
@@ -178,13 +236,36 @@ export default function MyOrdersPage() {
                                 {item.productName}
                               </p>
                               <p className="text-xs text-gray-500 mb-3">Quantity: <span className="font-bold text-gray-700">{item.quantity}</span></p>
-                              <div className="flex flex-wrap gap-2">
-                                <button className="flex items-center gap-1.5 bg-pp-accent-warm text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-sm hover:brightness-110 transition-all uppercase tracking-wider">
+                               <div className="flex flex-wrap gap-2">
+                                <button 
+                                  onClick={() => {
+                                    addToCart({
+                                      id: item.productId,
+                                      name: item.productName,
+                                      price: item.sellingAmount / item.quantity,
+                                      imageUrl: item.imageUrl,
+                                      stockQuantity: 100 // Fallback
+                                    } as any);
+                                    router.push("/cart");
+                                  }}
+                                  className="flex items-center gap-1.5 bg-pp-accent-warm text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-sm hover:brightness-110 transition-all uppercase tracking-wider"
+                                >
                                   <RotateCcw className="w-3.5 h-3.5" /> Buy it again
                                 </button>
-                                <button className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black hover:bg-gray-50 transition-all uppercase tracking-wider">
+                                <button 
+                                  onClick={() => router.push(`/product/${item.productId}`)}
+                                  className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-xl text-[10px] font-black hover:bg-gray-50 transition-all uppercase tracking-wider"
+                                >
                                   View Item
                                 </button>
+                                {order.status.toLowerCase() === 'delivered' && (
+                                  <button 
+                                    onClick={() => handleReviewClick({ id: item.productId, name: item.productName, imageUrl: item.imageUrl })}
+                                    className="px-4 py-2 bg-pp-primary/10 text-pp-primary rounded-xl text-[10px] font-black hover:bg-pp-primary hover:text-white transition-all uppercase tracking-wider"
+                                  >
+                                    Write a review
+                                  </button>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -192,20 +273,16 @@ export default function MyOrdersPage() {
                       </div>
                     </div>
 
-                    <div className="lg:w-64 flex flex-col gap-3">
-                      {order.status.toLowerCase() === 'pending' ? (
-                        <button
-                          onClick={() => handleCancelClick(order.orderId)}
-                          className="w-full py-3 bg-red-500 text-white rounded-xl text-xs font-black shadow-lg hover:bg-red-600 transition-all uppercase tracking-widest text-center"
-                        >
-                          CANCEL
-                        </button>
-                      ) : (
-                        <button className="w-full py-3 bg-white border-2 border-gray-100 text-gray-700 rounded-xl text-xs font-black shadow-sm hover:border-pp-primary/30 transition-all uppercase tracking-widest">
-                          Write a product review
-                        </button>
-                      )}
-                    </div>
+                      <div className="lg:w-64 flex flex-col gap-3">
+                        {order.status.toLowerCase() === 'pending' && (
+                          <button
+                            onClick={() => handleCancelClick(order.orderId)}
+                            className="w-full py-3 bg-red-500 text-white rounded-xl text-xs font-black shadow-lg hover:bg-red-600 transition-all uppercase tracking-widest text-center"
+                          >
+                            CANCEL
+                          </button>
+                        )}
+                      </div>
                   </div>
                 </div>
               </div>
@@ -242,6 +319,82 @@ export default function MyOrdersPage() {
                 {isCancelling ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "YES, CANCEL"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Review Modal */}
+      {showReviewModal && reviewingProduct && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+              <h3 className="text-xl font-black text-gray-900 tracking-tight">Write a Review</h3>
+              <button 
+                onClick={() => setShowReviewModal(false)}
+                className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 text-gray-400 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleReviewSubmit} className="p-8 space-y-6">
+              <div className="flex gap-4 items-center p-4 bg-gray-50 rounded-2xl">
+                <div className="w-16 h-16 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0 flex items-center justify-center">
+                  {reviewingProduct.imageUrl ? (
+                    <img src={reviewingProduct.imageUrl} alt={reviewingProduct.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <Package className="w-6 h-6 text-gray-200" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-gray-900 line-clamp-2">{reviewingProduct.name}</p>
+                </div>
+              </div>
+
+              <div className="text-center space-y-3">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Rate this product</p>
+                <div className="flex justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setRating(star)}
+                      className="p-1 transition-transform active:scale-90"
+                    >
+                      <Star 
+                        className={`w-10 h-10 ${star <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} 
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Your Feedback</p>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="What did you like or dislike about this product?"
+                  className="w-full bg-gray-50 border-2 border-transparent focus:border-pp-primary focus:bg-white rounded-2xl p-4 outline-none transition-all text-sm font-medium min-h-[120px] resize-none text-left"
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowReviewModal(false)}
+                  className="flex-1 py-4 bg-gray-50 text-gray-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReview || rating === 0}
+                  className="flex-1 py-4 bg-pp-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-pp-primary-dark transition-colors shadow-lg shadow-pp-primary/20 disabled:opacity-50"
+                >
+                  {isSubmittingReview ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Submit Review"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

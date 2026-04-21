@@ -9,11 +9,13 @@ import { Check, ShieldCheck, MapPin, CreditCard, Banknote, Smartphone, Plus, Tra
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { getAddresses, addAddress, autofillAddress, checkout, type CustomerAddress, deleteAddress, setDefaultAddress, updateAddress } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 
 type Step = "address" | "summary" | "payment";
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, cartCount, clearCart } = useCart();
+  const { cart, cartTotal, cartMrpTotal, cartCount, clearCart } = useCart();
+  const { error } = useToast();
   const { user, token } = useAuth();
   const router = useRouter();
   
@@ -237,17 +239,17 @@ export default function CheckoutPage() {
     }
 
     if (!checkoutInfo) {
-      alert("Please provide an address");
+      error("Please provide an address");
       setIsPlacingOrder(false);
       return;
     }
 
-    const res = await checkout(cart, checkoutInfo);
-    if (res) {
+    try {
+      const res = await checkout(cart, checkoutInfo);
       clearCart();
       router.push(`/order-success?orderId=${res.orderId}`);
-    } else {
-      alert("Something went wrong. Please try again.");
+    } catch (err: any) {
+      error(err.message || "Something went wrong. Please try again.");
     }
     setIsPlacingOrder(false);
   };
@@ -601,11 +603,11 @@ export default function CheckoutPage() {
               <div className="p-5 space-y-3 text-sm">
                 <div className="flex justify-between text-gray-700">
                   <span>Subtotal ({cartCount} items)</span>
-                  <span>{formatPrice(cartTotal + (cartTotal * 0.1))}</span>
+                  <span>{formatPrice(cartMrpTotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700">Discount</span>
-                  <span className="text-pp-success font-semibold">- {formatPrice(cartTotal * 0.1)}</span>
+                  <span className="text-pp-success font-semibold">- {formatPrice(cartMrpTotal - cartTotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700">Delivery</span>
@@ -617,7 +619,7 @@ export default function CheckoutPage() {
                 </div>
               </div>
               <div className="bg-pp-success/10 p-3 text-center border-t border-pp-success/10">
-                <p className="text-pp-success text-[11px] font-bold uppercase tracking-wide">You saved ₹{(cartTotal * 0.1).toFixed(0)} on this order!</p>
+                <p className="text-pp-success text-[11px] font-bold uppercase tracking-wide">You saved {formatPrice(cartMrpTotal - cartTotal)} on this order!</p>
               </div>
             </div>
           </div>

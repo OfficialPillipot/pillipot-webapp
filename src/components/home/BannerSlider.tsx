@@ -67,13 +67,6 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
                 <div className="flex flex-col justify-center min-h-[200px] md:min-h-[280px]">
 
                   <div className="max-w-xl text-left">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Zap className="w-5 h-5 text-yellow-300 animate-pulse" />
-                      <span className="text-white/90 text-xs font-bold uppercase tracking-[0.2em] drop-shadow-sm">
-                        Limited Time Offer
-                      </span>
-                    </div>
-
                     {/* Optional Title */}
                     {/*
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight mb-4 drop-shadow-lg">

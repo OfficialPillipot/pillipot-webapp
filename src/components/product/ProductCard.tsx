@@ -14,8 +14,8 @@ export default function ProductCard({ product }: ProductCardProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
   const wishlisted = isInWishlist(product.id);
   const displayImage = product.imageUrl || `data:image/svg+xml;base64,${btoa('<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="400" fill="#F3F4FB"/><path d="M200 150V250M150 200H250" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round"/><circle cx="200" cy="200" r="60" stroke="#D1D5DB" stroke-width="2" stroke-dasharray="4 4"/><text x="200" y="290" text-anchor="middle" fill="#9CA3AF" font-family="sans-serif" font-size="12" font-weight="600" letter-spacing="0.05em">NO IMAGE</text></svg>')}`;
-  const rating = product.rating ?? 4.5;
-  const reviews = product.reviews ?? 100;
+  const rating = product.rating || 0;
+  const reviewsCount = product.reviewsCount ?? 0;
   const discount = product.discount ?? 0;
   const originalPrice = product.originalPrice ?? (product.price * 1.1);
 
@@ -45,9 +45,11 @@ export default function ProductCard({ product }: ProductCardProps) {
           <div className="absolute bottom-1 right-2 flex items-center gap-1 bg-[#388e3c] text-white text-[10px] px-1.5 py-0.5 rounded">
             {rating}
             <Star className="w-2.5 h-2.5 fill-white" />
-            {/* <span className="text-gray-200 text-[10px]">
-              ({reviews.toLocaleString()})
-            </span> */}
+            {reviewsCount > 0 && (
+              <span className="text-gray-200 text-[8px] border-l border-white/20 pl-1 ml-0.5">
+                {reviewsCount}
+              </span>
+            )}
           </div>
         </div>
       </Link>

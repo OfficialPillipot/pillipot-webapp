@@ -3,6 +3,7 @@ import Footer from "@/components/layout/Footer";
 import CategoryBar from "@/components/layout/CategoryBar";
 import ProductCard from "@/components/product/ProductCard";
 import SubcategoryFilter from "@/components/category/SubcategoryFilter";
+import FilterSidebar from "@/components/category/FilterSidebar";
 import { getProducts, getCategories, getSubcategories, type Product, type Category } from "@/lib/api";
 
 export default async function CategoryPage({ 
@@ -10,14 +11,35 @@ export default async function CategoryPage({
   searchParams
 }: { 
   params: Promise<{ id: string }>,
-  searchParams: Promise<{ subcategory?: string }>
+  searchParams: Promise<{ 
+    subcategory?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    minRating?: string;
+    sort?: string;
+  }>
 }) {
   const { id } = await params;
-  const { subcategory: subId } = await searchParams;
+  const sParams = await searchParams;
+  const { 
+    subcategory: subId,
+    minPrice,
+    maxPrice,
+    minRating,
+    sort
+  } = sParams;
 
   // Fetch concurrently on the server
   const [products, cList, subcategories] = await Promise.all([
-    getProducts(id, undefined, subId),
+    getProducts(
+      id, 
+      undefined, 
+      subId, 
+      minPrice ? Number(minPrice) : undefined, 
+      maxPrice ? Number(maxPrice) : undefined,
+      minRating ? Number(minRating) : undefined,
+      sort
+    ),
     getCategories(),
     getSubcategories(id)
   ]);
@@ -33,42 +55,8 @@ export default async function CategoryPage({
       <main className="flex-1 max-w-[1600px] mx-auto w-full px-2 py-2 sm:px-4 sm:py-4">
         <div className="flex flex-col lg:flex-row gap-2 sm:gap-4">
 
-          {/* Filters Sidebar - Flipkart Style */}
-          <aside className="hidden lg:flex flex-col w-[280px] shrink-0 bg-white shadow-sm border border-gray-200">
-            <div className="p-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">Filters</h2>
-            </div>
-
-            <div className="flex-1 overflow-y-auto">
-              <div className="p-4 border-b border-gray-100">
-                <span className="text-xs font-bold text-gray-900 uppercase tracking-tight mb-4 block">Categories</span>
-                <nav className="text-sm text-gray-600 space-y-2">
-                  <div className="flex items-center gap-2 cursor-pointer hover:text-pp-primary">
-                    <span className="text-gray-400">‹</span> {categoryName}
-                  </div>
-                </nav>
-              </div>
-
-              <div className="p-4 border-b border-gray-100">
-                <span className="text-xs font-bold text-gray-900 uppercase tracking-tight mb-4 block">Price</span>
-                <div className="px-2">
-                  <input type="range" className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-pp-primary" />
-                  <div className="flex justify-between mt-4 text-sm text-gray-600">
-                    <div className="border border-gray-200 rounded px-2 py-1 min-w-[60px]">₹0</div>
-                    <div className="border border-gray-200 rounded px-2 py-1 min-w-[60px]">₹1,50,000+</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 border-b border-gray-100">
-                <FilterSection title="Customer Ratings" items={["4★ & above", "3★ & above"]} />
-              </div>
-
-              <div className="p-4">
-                <FilterSection title="Offers" items={["Buy More Save More", "Special Price"]} />
-              </div>
-            </div>
-          </aside>
+          {/* Filters Sidebar - Interactive Component */}
+          <FilterSidebar categoryName={categoryName} />
 
           {/* Results Area */}
           <div className="flex-1 bg-white shadow-sm border border-gray-200">
@@ -102,17 +90,27 @@ export default async function CategoryPage({
               <SubcategoryFilter subcategories={subcategories} categoryId={id} />
             )}
 
-            {/* Sort Bar - Mobile friendly */}
+            {/* Sort Bar */}
             <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 text-sm overflow-x-auto no-scrollbar whitespace-nowrap">
-              <span className="font-bold text-gray-900 shrink-0">Sort By</span>
-              {["Relevance", "Popularity", "Price -- Low to High", "Price -- High to Low", "Newest First"].map((sort, i) => (
-                <button
-                  key={sort}
-                  className={`px-1 py-1 transition-colors ${i === 0 ? "text-pp-primary font-bold border-b-2 border-pp-primary" : "text-gray-600 hover:text-pp-primary"}`}
-                >
-                  {sort}
-                </button>
-              ))}
+              <span className="font-black text-gray-400 uppercase tracking-widest text-[10px] shrink-0 mr-2">Sort By</span>
+              {[
+                { label: "Relevance", key: "" },
+                { label: "Popularity", key: "popularity" },
+                { label: "Price -- Low to High", key: "price_low" },
+                { label: "Price -- High to Low", key: "price_high" },
+                { label: "Newest First", key: "newest" }
+              ].map((s) => {
+                const isActive = (sort || "") === s.key;
+                return (
+                  <SortLink 
+                    key={s.key} 
+                    label={s.label} 
+                    sortKey={s.key} 
+                    isActive={isActive} 
+                    currentParams={sParams}
+                  />
+                );
+              })}
             </div>
 
             {/* Product Grid */}
@@ -139,16 +137,19 @@ export default async function CategoryPage({
   );
 }
 
-function FilterSection({ title, items }: { title: string; items: string[] }) {
+import Link from "next/link";
+function SortLink({ label, sortKey, isActive, currentParams }: { label: string; sortKey: string; isActive: boolean; currentParams: any }) {
+  const query = { ...currentParams };
+  if (sortKey) query.sort = sortKey;
+  else delete query.sort;
+  
   return (
-    <div className="flex flex-col gap-2.5">
-      <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{title}</span>
-      {items.map(item => (
-        <label key={item} className="flex items-center gap-2.5 text-sm text-gray-700 cursor-pointer hover:text-pp-primary">
-          <input type="checkbox" className="w-3.5 h-3.5 rounded accent-pp-primary" />
-          {item}
-        </label>
-      ))}
-    </div>
+    <Link
+      href={{ query }}
+      scroll={false}
+      className={`px-1 py-1 transition-all ${isActive ? "text-pp-primary font-black border-b-2 border-pp-primary" : "text-gray-500 font-bold hover:text-pp-primary"}`}
+    >
+      {label}
+    </Link>
   );
 }

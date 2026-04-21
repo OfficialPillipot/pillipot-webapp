@@ -39,7 +39,7 @@ export interface Product {
   stockQuantity: number;
   brand?: string;
   rating?: number;
-  reviews?: number;
+  reviewsCount?: number;
   originalPrice?: number;
   discount?: number;
 }
@@ -56,23 +56,35 @@ export async function getSubcategories(categoryId: string): Promise<Category[]> 
   return res.json();
 }
 
-export async function getProducts(categoryId?: string, search?: string, subcategoryId?: string): Promise<Product[]> {
+export async function getProducts(
+  categoryId?: string, 
+  search?: string, 
+  subcategoryId?: string,
+  minPrice?: number,
+  maxPrice?: number,
+  minRating?: number,
+  sort?: string
+): Promise<Product[]> {
   const params = new URLSearchParams();
   if (categoryId) params.append("categoryId", categoryId);
   if (subcategoryId) params.append("subcategoryId", subcategoryId);
   if (search) params.append("search", search);
+  if (minPrice) params.append("minPrice", minPrice.toString());
+  if (maxPrice) params.append("maxPrice", maxPrice.toString());
+  if (minRating) params.append("minRating", minRating.toString());
+  if (sort) params.append("sort", sort);
   
   const url = params.toString() 
     ? `${API_URL}/customer/products?${params.toString()}`
     : `${API_URL}/customer/products`;
     
-  const res = await fetch(url, { next: { revalidate: 60 } });
+  const res = await fetch(url, { next: { revalidate: 10 } });
   if (!res.ok) return [];
   return res.json();
 }
 
 export async function getProduct(id: string): Promise<Product | null> {
-  const res = await fetch(`${API_URL}/customer/products/${id}`, { next: { revalidate: 60 } });
+  const res = await fetch(`${API_URL}/customer/products/${id}`, { next: { revalidate: 10 } });
   if (!res.ok) return null;
   return res.json();
 }
@@ -229,13 +241,24 @@ export async function autofillAddress(phone: string): Promise<any | null> {
   return res.json();
 }
 
-export async function checkout(cart: any[], customerInfo: any): Promise<{ orderId: string } | null> {
+export async function checkout(cart: any[], customerInfo: any): Promise<{ orderId: string }> {
   const res = await fetch(`${API_URL}/orders/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ cart, customerInfo }),
   });
-  if (!res.ok) return null;
+  if (!res.ok) {
+    let msg = "Something went wrong. Please try again.";
+    try {
+      const data = await res.json();
+      if (data.message) {
+        msg = Array.isArray(data.message) ? data.message[0] : data.message;
+      } else if (data.error) {
+        msg = data.error;
+      }
+    } catch (e) {}
+    throw new Error(msg);
+  }
   return res.json();
 }
 
@@ -275,10 +298,44 @@ export async function getMyOrders(token: string): Promise<any[]> {
   return res.json();
 }
 
+export async function getOrderDetails(token: string, orderId: string): Promise<any | null> {
+  const res = await fetch(`${API_URL}/orders/track/${orderId}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function downloadInvoice(token: string, orderId: string) {
+  const res = await fetch(`${API_URL}/orders/${orderId}/invoice`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) return;
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `invoice-${orderId}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
 export async function cancelOrderApi(token: string, orderId: string): Promise<boolean> {
   const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
   });
   return res.ok;
+}
+
+export async function submitReview(token: string, productId: string, rating: number, comment?: string): Promise<any> {
+  const res = await fetch(`${API_URL}/customer/reviews`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ productId, rating, comment }),
+  });
+  if (!res.ok) throw new Error("Failed to submit review");
+  return res.json();
 }

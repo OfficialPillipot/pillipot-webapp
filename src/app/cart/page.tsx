@@ -10,7 +10,7 @@ import { Trash2, Plus, Minus, ShieldCheck, ArrowRight, ShoppingBag, Package } fr
 
 export default function CartPage() {
   const router = useRouter();
-  const { cart, removeFromCart, updateQuantity, cartTotal, cartCount, syncingItems } = useCart();
+  const { cart, removeFromCart, updateQuantity, cartTotal, cartMrpTotal, cartCount, syncingItems } = useCart();
 
   const formatPrice = (num: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -135,11 +135,11 @@ export default function CartPage() {
               <div className="p-5 space-y-4">
                 <div className="flex justify-between text-sm text-gray-700">
                   <span>Price ({cartCount} item{cartCount > 1 ? 's' : ''})</span>
-                  <span>{formatPrice(cartTotal + (cartTotal * 0.2))}</span>
+                  <span>{formatPrice(cartMrpTotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-700">Discount</span>
-                  <span className="text-pp-success font-semibold">- {formatPrice(cartTotal * 0.2)}</span>
+                  <span className="text-pp-success font-semibold">- {formatPrice(cartMrpTotal - cartTotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-700">Delivery</span>
@@ -152,7 +152,7 @@ export default function CartPage() {
               </div>
               <div className="p-4 bg-green-50/50 border-t border-gray-100">
                 <p className="text-pp-success font-semibold text-xs text-center">
-                  🎉 You save {formatPrice(cartTotal * 0.2)} on this order
+                  🎉 You save {formatPrice(cartMrpTotal - cartTotal)} on this order
                 </p>
               </div>
             </div>

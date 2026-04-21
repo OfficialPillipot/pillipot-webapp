@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { Product, fetchCart, addToCartApi, updateCartQuantityApi, clearCartApi } from "@/lib/api";
 import { useAuth } from "./AuthContext";
+import { useToast } from "./ToastContext";
 
 interface CartItem extends Product {
   cartQuantity: number;
@@ -15,6 +16,7 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
   cartTotal: number;
+  cartMrpTotal: number;
   cartCount: number;
   loading: boolean;
   syncingItems: Record<string, boolean>;
@@ -24,6 +26,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const { user, token } = useAuth();
+  const { success } = useToast();
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [syncingItems, setSyncingItems] = useState<Record<string, boolean>>({});
@@ -100,6 +103,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (user && token) addToCartApi(token, product.id, 1);
       return [...prev, { ...product, cartQuantity: 1 }];
     });
+    success("Added to cart");
   };
 
   const removeFromCart = async (productId: string) => {
@@ -111,6 +115,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error("Cart sync failed", error);
       }
     }
+    success("Removed from cart");
   };
 
   const updateQuantity = async (productId: string, quantity: number) => {
@@ -145,6 +150,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     0
   );
 
+  const cartMrpTotal = cart.reduce(
+    (total, item) => total + (item.originalPrice || item.price) * item.cartQuantity,
+    0
+  );
+
   const cartCount = cart.reduce((count, item) => count + item.cartQuantity, 0);
 
   return (
@@ -156,6 +166,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         updateQuantity,
         clearCart,
         cartTotal,
+        cartMrpTotal,
         cartCount,
         loading,
         syncingItems,
