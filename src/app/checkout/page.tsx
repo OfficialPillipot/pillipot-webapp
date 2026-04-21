@@ -37,7 +37,7 @@ export default function CheckoutPage() {
     secondaryPhone: "",
     addressType: "home" as "home" | "work",
     isDefault: false,
-    email: "",
+    email: user?.username || "",
   });
 
   const formatPrice = (num: number) =>
@@ -58,13 +58,20 @@ export default function CheckoutPage() {
     if (defaultAddr) setSelectedAddressId(defaultAddr.id);
     setIsLoading(false);
   };
+  
+  // Set email from logged-in user
+  useEffect(() => {
+    if (user?.username) {
+      setFormData(prev => ({ ...prev, email: user.username }));
+    }
+  }, [user]);
 
   // Phone Autofill logic
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (formData.phone.length === 10) {
         const data = await autofillAddress(formData.phone);
-        if (data) {
+        if (data && data.email === user?.username) {
           // Split deliveryAddress like staff app
           const t = (data.deliveryAddress || "").trim();
           let flat = t;
@@ -84,7 +91,6 @@ export default function CheckoutPage() {
             areaSector: area || prev.areaSector,
             district: data.district || prev.district,
             state: data.state || prev.state,
-            email: data.email || prev.email,
             secondaryPhone: data.secondaryPhone || prev.secondaryPhone,
           }));
         }
@@ -101,7 +107,7 @@ export default function CheckoutPage() {
     if (name === "phone" && value.length === 10) {
       void (async () => {
         const data = await autofillAddress(value);
-        if (data) {
+        if (data && data.email === user?.username) {
           // Split deliveryAddress like staff app
           const t = (data.deliveryAddress || "").trim();
           let flat = t;
@@ -121,7 +127,6 @@ export default function CheckoutPage() {
             areaSector: area || prev.areaSector,
             district: data.district || prev.district,
             state: data.state || prev.state,
-            email: data.email || prev.email,
             secondaryPhone: data.secondaryPhone || prev.secondaryPhone,
           }));
         }
@@ -191,7 +196,7 @@ export default function CheckoutPage() {
       secondaryPhone: addr.secondaryPhone || "",
       addressType: addr.addressType as any,
       isDefault: addr.isDefault,
-      email: addr.email || "",
+      email: user?.username || addr.email || "",
     });
     setShowAddressForm(true);
   };
@@ -383,7 +388,7 @@ export default function CheckoutPage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <InputField label="Alternate Phone (Optional)" name="secondaryPhone" value={formData.secondaryPhone} onChange={handleInputChange} />
-                        <InputField label="Email (Optional)" name="email" value={formData.email} onChange={handleInputChange} />
+                        <InputField label="Email (Linked to Account)" name="email" value={formData.email} onChange={handleInputChange} readOnly />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -546,7 +551,7 @@ export default function CheckoutPage() {
   );
 }
 
-function InputField({ label, name, value, onChange, required = false, maxLength, autoFocus, placeholder }: any) {
+function InputField({ label, name, value, onChange, required = false, maxLength, autoFocus, placeholder, readOnly }: any) {
   return (
     <div className="flex flex-col gap-1.5 w-full">
       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">{label}</label>
@@ -558,8 +563,9 @@ function InputField({ label, name, value, onChange, required = false, maxLength,
         required={required}
         maxLength={maxLength}
         autoFocus={autoFocus}
+        readOnly={readOnly}
         placeholder={placeholder || label}
-        className="border border-gray-200 rounded-xl p-3.5 outline-none focus:border-pp-primary focus:ring-2 focus:ring-pp-primary/10 transition-all text-sm w-full bg-gray-50 focus:bg-white"
+        className={`border border-gray-200 rounded-xl p-3.5 outline-none transition-all text-sm w-full ${readOnly ? "bg-gray-100 cursor-not-allowed text-gray-500" : "bg-gray-50 focus:bg-white focus:border-pp-primary focus:ring-2 focus:ring-pp-primary/10"}`}
       />
     </div>
   );
