@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Search, ShoppingCart, User, Heart, Menu, X, Home, Package } from "lucide-react";
+import { Search, ShoppingCart, User, Heart, Menu, X, Home, Package, ChevronDown } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
@@ -35,6 +35,20 @@ export default function Header() {
     }
   };
 
+  // Close user menu when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".user-menu-container")) {
+        setUserMenuOpen(false);
+      }
+    };
+    if (userMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [userMenuOpen]);
+
   return (
     <>
       <header className="pp-gradient sticky top-0 z-50">
@@ -49,11 +63,11 @@ export default function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-1.5 shrink-0">
-            <div className="w-7 h-7 md:w-8 md:h-8 bg-white rounded-lg flex items-center justify-center">
+            <div className="w-7 h-7 md:w-8 md:h-8 bg-white rounded-lg flex items-center justify-center transition-transform hover:rotate-3 shadow-lg shadow-white/10">
               <span className="text-pp-primary font-black text-base md:text-lg">P</span>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-white font-extrabold text-base md:text-lg tracking-tight">pillipot</span>
+              <span className="text-white font-extrabold text-base md:text-lg tracking-tight hover:text-white/90 transition-colors">pillipot</span>
               <span className="text-white/60 text-[9px] md:text-[10px] font-medium tracking-widest uppercase hidden sm:block">marketplace</span>
             </div>
           </Link>
@@ -65,9 +79,9 @@ export default function Header() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products, brands & more..."
-              className="w-full bg-white/15 backdrop-blur-sm border border-white/20 h-10 rounded-xl px-5 pr-12 text-sm outline-none text-white placeholder:text-white/50 focus:bg-white/25 focus:border-white/40 transition-all"
+              className="w-full bg-white/15 backdrop-blur-sm border border-white/20 h-10 rounded-xl px-5 pr-12 text-sm outline-none text-white placeholder:text-white/50 focus:bg-white/25 focus:border-white/40 transition-all font-medium"
             />
-            <button type="submit" className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 w-7 h-7 flex items-center justify-center rounded-lg transition-colors">
+            <button type="submit" className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 w-7 h-7 flex items-center justify-center rounded-lg transition-all hover:scale-105 active:scale-95">
               <Search className="text-white w-4 h-4" />
             </button>
           </form>
@@ -83,24 +97,44 @@ export default function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2 lg:gap-3">
             {user ? (
-              <div className="relative">
+              <div className="relative user-menu-container">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-sm font-bold shadow-lg ${
+                    userMenuOpen 
+                      ? "bg-white text-pp-primary scale-105" 
+                      : "text-white bg-white/10 hover:bg-white/20 border border-white/10"
+                  }`}
                 >
-                  <User className="w-4 h-4" />
+                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${userMenuOpen ? "bg-pp-primary/10" : "bg-white/20"}`}>
+                    <User className="w-3.5 h-3.5" />
+                  </div>
                   <span>{user.name}</span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${userMenuOpen ? "rotate-180" : ""}`} />
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 py-2 z-[60] animate-in fade-in slide-in-from-top-2">
-                    <Link href="/orders" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50">
-                      <Package className="w-4 h-4" /> My Orders
+                  <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2.5 z-[60] animate-in fade-in zoom-in-95 duration-200">
+                    <div className="px-4 py-2 mb-1 border-b border-gray-50">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Account Management</p>
+                    </div>
+                    <Link 
+                      href="/orders" 
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-700 hover:bg-violet-50 hover:text-pp-primary transition-all group"
+                    >
+                      <div className="w-8 h-8 rounded-xl bg-violet-50 flex items-center justify-center group-hover:bg-pp-primary group-hover:text-white transition-all">
+                        <Package className="w-4 h-4" />
+                      </div>
+                      My Orders
                     </Link>
                     <button
-                      onClick={logout}
-                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                      onClick={() => { logout(); setUserMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-all group"
                     >
-                      <LogOut className="w-4 h-4" /> Logout
+                      <div className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center group-hover:bg-red-500 group-hover:text-white transition-all">
+                        <LogOut className="w-4 h-4" />
+                      </div>
+                      Logout
                     </button>
                   </div>
                 )}

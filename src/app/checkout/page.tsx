@@ -269,7 +269,7 @@ export default function CheckoutPage() {
     <div className="flex flex-col min-h-screen bg-pp-surface">
       <Header />
 
-      <main className="flex-1 pp-container px-4 py-6">
+      <main className="flex-1 pp-container py-6">
         <div className="flex items-center justify-center gap-2 mb-8">
           {steps.map((step, i) => (
             <React.Fragment key={step.key}>

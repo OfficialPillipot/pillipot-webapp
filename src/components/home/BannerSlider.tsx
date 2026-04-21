@@ -43,8 +43,11 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
       >
         {banners.map((banner) => (
           <SwiperSlide key={banner.id}>
-            <Link href={banner.linkUrl || "#"} className="block relative w-full h-full group cursor-pointer aspect-[21/9] md:aspect-[3/1] lg:min-h-[280px]">
-              {/* Background Image - Full Width & Height */}
+            <Link
+              href={banner.linkUrl || "#"}
+              className="block relative w-full group cursor-pointer overflow-hidden rounded-2xl shadow-lg"
+            >
+              {/* Background Image */}
               <div className="absolute inset-0 z-0">
                 <Image
                   src={banner.imageUrl}
@@ -56,38 +59,44 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
                 />
               </div>
 
-              {/* Overlay Gradient for Text Readability */}
+              {/* Overlay Gradient */}
               <div className="absolute inset-0 z-10 bg-gradient-to-r from-black/60 via-black/20 to-transparent" />
 
-              {/* Text Content - Positioned Left */}
-              <div className="relative z-20 h-full pp-container px-6 lg:px-12 flex flex-col justify-center">
-                <div className="max-w-xl text-left">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Zap className="w-5 h-5 text-yellow-300 animate-pulse" />
-                    <span className="text-white/90 text-xs font-bold uppercase tracking-[0.2em] drop-shadow-sm">
-                      Limited Time Offer
-                    </span>
-                  </div>
+              {/* Content Wrapper with SAME HEIGHT */}
+              <div className="relative z-20 pp-container px-6 lg:px-12">
+                <div className="flex flex-col justify-center min-h-[200px] md:min-h-[280px]">
 
-                  {/* <h2 className="text-3xl md:text-5xl lg:text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-lg">
-                    {banner.title}
-                  </h2> */}
-
-                  {banner.description && (
-                    <p className="text-white/80 text-sm md:text-xl mb-10 max-w-md line-clamp-3 md:line-clamp-none drop-shadow-md font-medium leading-relaxed">
-                      {banner.description}
-                    </p>
-                  )}
-
-                  {banner.linkUrl && (
-                    <div className="pt-2">
-                      <span className="inline-flex items-center gap-2 sm:gap-3 bg-white text-pp-primary px-3 py-2 sm:px-5 sm:py-4 rounded-lg font-black text-sm sm:text-base shadow-lg sm:shadow-xl hover:bg-pp-primary hover:text-white sm:hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] transition-all duration-300 group/btn"
-                      >
-                        Shop Now
-                        <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                  <div className="max-w-xl text-left">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Zap className="w-5 h-5 text-yellow-300 animate-pulse" />
+                      <span className="text-white/90 text-xs font-bold uppercase tracking-[0.2em] drop-shadow-sm">
+                        Limited Time Offer
                       </span>
                     </div>
-                  )}
+
+                    {/* Optional Title */}
+                    {/*
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-black text-white leading-tight mb-4 drop-shadow-lg">
+            {banner.title}
+          </h2>
+          */}
+
+                    {banner.description && (
+                      <p className="text-white/80 text-sm md:text-base mb-6 max-w-md drop-shadow-md font-medium leading-relaxed">
+                        {banner.description}
+                      </p>
+                    )}
+
+                    {banner.linkUrl && (
+                      <div className="pt-2">
+                        <span className="inline-flex items-center gap-2 bg-white text-pp-primary px-6 py-3 rounded-xl font-bold hover:shadow-lg hover:scale-105 transition-all text-sm group/btn">
+                          Shop Now
+                          <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               </div>
             </Link>
