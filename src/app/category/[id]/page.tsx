@@ -2,15 +2,24 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CategoryBar from "@/components/layout/CategoryBar";
 import ProductCard from "@/components/product/ProductCard";
-import { getProducts, getCategories, type Product, type Category } from "@/lib/api";
+import SubcategoryFilter from "@/components/category/SubcategoryFilter";
+import { getProducts, getCategories, getSubcategories, type Product, type Category } from "@/lib/api";
 
-export default async function CategoryPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CategoryPage({ 
+  params,
+  searchParams
+}: { 
+  params: Promise<{ id: string }>,
+  searchParams: Promise<{ subcategory?: string }>
+}) {
   const { id } = await params;
+  const { subcategory: subId } = await searchParams;
 
   // Fetch concurrently on the server
-  const [products, cList] = await Promise.all([
-    getProducts(id),
-    getCategories()
+  const [products, cList, subcategories] = await Promise.all([
+    getProducts(id, undefined, subId),
+    getCategories(),
+    getSubcategories(id)
   ]);
 
   const category = cList.find(c => c.id === id);
@@ -64,17 +73,34 @@ export default async function CategoryPage({ params }: { params: Promise<{ id: s
           {/* Results Area */}
           <div className="flex-1 bg-white shadow-sm border border-gray-200">
             {/* Breadcrumbs & Title strip */}
+            {/*Breadcrumbs & Title strip */}
             <div className="p-4 border-b border-gray-100">
               <nav className="text-[10px] sm:text-xs text-gray-500 mb-2 flex items-center gap-1">
-                <a href="/">Home</a> <span>›</span> <a href="/">{categoryName}</a>
+                <a href="/">Home</a> <span>›</span> <a href={`/category/${id}`}>{categoryName}</a>
+                {subId && subcategories.find(s => s.id === subId) && (
+                  <>
+                    <span>›</span>
+                    <span className="text-gray-900 font-medium">
+                      {subcategories.find(s => s.id === subId)?.name}
+                    </span>
+                  </>
+                )}
               </nav>
               <h1 className="text-base font-bold text-gray-900">
                 {categoryName}
+                {subId && subcategories.find(s => s.id === subId) && (
+                  <span className="text-pp-primary ml-1">: {subcategories.find(s => s.id === subId)?.name}</span>
+                )}
                 <span className="text-gray-500 font-normal text-xs ml-2">
                   (Showing {products.length} products)
                 </span>
               </h1>
             </div>
+
+            {/* Subcategory stylish pills */}
+            {subcategories.length > 0 && (
+              <SubcategoryFilter subcategories={subcategories} categoryId={id} />
+            )}
 
             {/* Sort Bar - Mobile friendly */}
             <div className="flex items-center gap-4 px-4 py-3 border-b border-gray-100 text-sm overflow-x-auto no-scrollbar whitespace-nowrap">

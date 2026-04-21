@@ -25,7 +25,7 @@ export default function Footer() {
     <footer className="bg-pp-dark text-white mt-10">
       {/* Trust badges */}
       <div className="border-b border-white/10">
-        <div className="pp-container px-4 lg:px-8 py-6 flex flex-wrap items-center justify-center gap-8 md:gap-16">
+        <div className="pp-container py-6 flex flex-wrap items-center justify-center gap-8 md:gap-16">
           <div className="flex items-center gap-3 text-sm text-white/70">
             <ShieldCheck className="w-6 h-6 text-pp-accent" />
             <span><b className="text-white">100%</b> Authentic Products</span>
@@ -42,7 +42,7 @@ export default function Footer() {
       </div>
 
       {/* Links */}
-      <div className="pp-container px-4 lg:px-8 py-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
+      <div className="pp-container py-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
         {SECTIONS.map((section) => (
           <div key={section.title} className="flex flex-col gap-3">
             <h4 className="text-xs font-bold text-white/40 tracking-widest mb-1">{section.title}</h4>
@@ -85,7 +85,7 @@ export default function Footer() {
 
       {/* Bottom bar */}
       <div className="border-t border-white/10">
-        <div className="pp-container px-4 lg:px-8 py-5 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/40">
+        <div className="pp-container py-5 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/40">
           <div className="flex items-center gap-2">
             <div className="w-6 h-6 pp-gradient rounded-md flex items-center justify-center">
               <span className="text-white font-black text-xs">P</span>

@@ -55,7 +55,7 @@ export default function WishlistPage() {
     <div className="flex flex-col min-h-screen bg-pp-surface">
       <Header />
 
-      <main className="flex-1  px-12 py-10">
+      <main className="flex-1 pp-container py-10">
         <div className="mb-10">
           <h1 className="text-xl font-bold text-gray-800 tracking-tight">
             My Wishlist <span className="font-normal text-gray-500 ml-1">{wishlist.length} {wishlist.length === 1 ? 'Item' : 'Items'}</span>
@@ -66,7 +66,7 @@ export default function WishlistPage() {
           {wishlist.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-sm border border-gray-100 hover:shadow-xl transition-all duration-300 relative group flex flex-col"
+              className="bg-white rounded-2xl border border-gray-100 hover:shadow-xl transition-all duration-300 relative group flex flex-col overflow-hidden"
             >
               {/* Close/Remove Icon */}
               <button
@@ -75,20 +75,20 @@ export default function WishlistPage() {
                   e.stopPropagation();
                   removeItem(item.id);
                 }}
-                className="absolute top-2 right-2 z-10 w-7 h-7 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white shadow-sm border border-gray-100 transition-all"
+                className="absolute top-3 right-3 z-10 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white shadow-lg border border-gray-100 transition-all active:scale-90"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-4 h-4" />
               </button>
 
               {/* Image Container */}
               <Link href={`/product/${item.id}`} className="block">
-                <div className="relative w-full aspect-[3/4] bg-gray-50 overflow-hidden">
+                <div className="relative w-full aspect-square bg-white overflow-hidden p-4">
                   <Image
                     src={item.imageUrl || ""}
                     alt={item.name}
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                    className="object-cover"
+                    className="object-contain p-2 hover:scale-110 transition-transform duration-500"
                   />
                   {(item.discount ?? 0) > 0 && (
                     <div className="absolute bottom-3 left-0 bg-white/90 backdrop-blur-sm text-pp-accent text-[10px] font-bold px-2 py-1 shadow-sm">

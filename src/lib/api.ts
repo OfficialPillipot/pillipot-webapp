@@ -50,9 +50,16 @@ export async function getCategories(): Promise<Category[]> {
   return res.json();
 }
 
-export async function getProducts(categoryId?: string, search?: string): Promise<Product[]> {
+export async function getSubcategories(categoryId: string): Promise<Category[]> {
+  const res = await fetch(`${API_URL}/customer/categories/${categoryId}/subcategories`, { next: { revalidate: 60 } });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getProducts(categoryId?: string, search?: string, subcategoryId?: string): Promise<Product[]> {
   const params = new URLSearchParams();
   if (categoryId) params.append("categoryId", categoryId);
+  if (subcategoryId) params.append("subcategoryId", subcategoryId);
   if (search) params.append("search", search);
   
   const url = params.toString() 
@@ -266,4 +273,12 @@ export async function getMyOrders(token: string): Promise<any[]> {
   });
   if (!res.ok) return [];
   return res.json();
+}
+
+export async function cancelOrderApi(token: string, orderId: string): Promise<boolean> {
+  const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.ok;
 }

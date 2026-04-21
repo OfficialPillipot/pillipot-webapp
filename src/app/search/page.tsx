@@ -19,7 +19,7 @@ export default async function SearchPage({
       <Header />
       <CategoryBar categories={categories} />
       
-      <main className="flex-1 pp-container px-4 md:px-8 py-8">
+      <main className="flex-1 pp-container py-8">
         <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-black text-gray-900">
             {q ? `Search results for "${q}"` : "Search Products"}
