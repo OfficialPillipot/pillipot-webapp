@@ -45,7 +45,7 @@ export default function CategoryBar({ categories }: { categories: Category[] }) 
   const pathname = usePathname();
 
   const displayCategories = [
-    { name: "Home", href: "/", icon: LayoutGrid, color: "from-[#0c1c33] via-pp-primary to-sky-400" },
+    { name: "Home", href: "/", icon: LayoutGrid, color: "from-[#0c1c33] via-pp-primary to-sky-400", imageUrl: undefined },
     ...categories.map((category) => ({
       name: category.name,
       href: `/category/${category.id}`,
