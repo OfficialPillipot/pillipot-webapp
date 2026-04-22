@@ -52,7 +52,7 @@ export default function Header() {
   return (
     <>
       <header className="pp-gradient sticky top-0 z-50 shadow-lg shadow-pp-primary/10 backdrop-blur-xl bg-opacity-90">
-        <div className="pp-container w-full flex items-center h-16 md:h-[72px] gap-3 lg:gap-8">
+        <div className="pp-container w-full flex items-center h-12 md:h-14 gap-2 lg:gap-6">
           {/* Mobile menu button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -62,13 +62,13 @@ export default function Header() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 lg:gap-2.5 shrink-0 group">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-xl flex items-center justify-center transition-all duration-300 md:group-hover:rotate-6 group-hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-              <span className="text-pp-primary font-black text-xl md:text-2xl" style={{ fontFamily: "var(--font-outfit)" }}>P</span>
+          <Link href="/" className="flex items-center gap-2 lg:gap-2 shrink-0 group">
+            <div className="w-7 h-7 md:w-8 md:h-8 bg-white rounded-lg flex items-center justify-center transition-all duration-300 md:group-hover:rotate-6 group-hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+              <span className="text-pp-primary font-black text-lg md:text-xl" style={{ fontFamily: "var(--font-outfit)" }}>P</span>
             </div>
             <div className="flex flex-col leading-none">
-              <span className="text-white font-extrabold text-lg md:text-2xl tracking-tight transition-transform duration-300 group-hover:translate-x-0.5" style={{ fontFamily: "var(--font-outfit)" }}>pillipot</span>
-              <span className="text-white/70 text-[9px] md:text-[10px] font-bold tracking-[0.2em] uppercase hidden sm:block mt-0.5">marketplace</span>
+              <span className="text-white font-extrabold text-base md:text-xl tracking-tight transition-transform duration-300 group-hover:translate-x-0.5" style={{ fontFamily: "var(--font-outfit)" }}>pillipot</span>
+              <span className="text-white/70 text-[8px] md:text-[9px] font-bold tracking-[0.2em] uppercase hidden sm:block mt-0.5">marketplace</span>
             </div>
           </Link>
 
@@ -79,10 +79,10 @@ export default function Header() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products, brands & more..."
-              className="w-full bg-white/15 backdrop-blur-sm border border-white/20 h-10 rounded-xl px-5 pr-12 text-sm outline-none text-white placeholder:text-white/50 focus:bg-white/25 focus:border-white/40 transition-all font-medium"
+              className="w-full bg-white/15 backdrop-blur-sm border border-white/20 h-8 rounded-lg px-4 pr-10 text-xs outline-none text-white placeholder:text-white/50 focus:bg-white/25 focus:border-white/40 transition-all font-medium"
             />
-            <button type="submit" className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 w-7 h-7 flex items-center justify-center rounded-lg transition-all hover:scale-105 active:scale-95">
-              <Search className="text-white w-4 h-4" />
+            <button type="submit" className="absolute right-1 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 w-6 h-6 flex items-center justify-center rounded-md transition-all hover:scale-105 active:scale-95">
+              <Search className="text-white w-3.5 h-3.5" />
             </button>
           </form>
 
@@ -95,22 +95,22 @@ export default function Header() {
           </button>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-2 lg:gap-3">
+          <div className="hidden md:flex items-center gap-1.5 lg:gap-2">
             {user ? (
               <div className="relative user-menu-container">
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all text-sm font-bold shadow-lg ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-lg ${
                     userMenuOpen 
                       ? "bg-white text-pp-primary scale-105" 
                       : "text-white bg-white/10 hover:bg-white/20 border border-white/10"
                   }`}
                 >
-                  <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-colors ${userMenuOpen ? "bg-pp-primary/10" : "bg-white/20"}`}>
-                    <User className="w-3.5 h-3.5" />
+                  <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors ${userMenuOpen ? "bg-pp-primary/10" : "bg-white/20"}`}>
+                    <User className="w-3 h-3" />
                   </div>
                   <span>{user.name}</span>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${userMenuOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-3 h-3 transition-transform duration-300 ${userMenuOpen ? "rotate-180" : ""}`} />
                 </button>
                 {userMenuOpen && (
                   <div className="absolute top-full right-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2.5 z-[60] animate-in fade-in zoom-in-95 duration-200">
@@ -142,30 +142,30 @@ export default function Header() {
             ) : (
               <button 
                 onClick={() => setIsLoginModalOpen(true)}
-                className="flex items-center gap-2 text-white/90 hover:text-white px-4 py-2 rounded-xl hover:bg-white/10 transition-all text-sm font-bold border border-white/20 active:scale-95 shadow-lg shadow-black/5"
+                className="flex items-center gap-1.5 text-white/90 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all text-xs font-bold border border-white/20 active:scale-95 shadow-lg shadow-black/5"
               >
-                <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center">
-                  <User className="w-3.5 h-3.5" />
+                <div className="w-5 h-5 rounded-md bg-white/20 flex items-center justify-center">
+                  <User className="w-3 h-3" />
                 </div>
                 <span className="hidden lg:inline">Login</span>
               </button>
             )}
 
-            <Link href="/wishlist" className="flex items-center gap-2 text-white/80 hover:text-white px-3 py-2 rounded-lg hover:bg-white/10 transition-all text-sm font-medium relative">
-              <Heart className="w-4 h-4" />
+            <Link href="/wishlist" className="flex items-center gap-1.5 text-white/80 hover:text-white px-2.5 py-1.5 rounded-lg hover:bg-white/10 transition-all text-xs font-medium relative">
+              <Heart className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">Wishlist</span>
               {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-pp-accent text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black">
+                <span className="absolute -top-1 -right-1 bg-pp-accent text-white text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center font-black">
                   {wishlistCount}
                 </span>
               )}
             </Link>
 
-            <Link href="/cart" className="flex items-center gap-2 text-white px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-sm font-semibold relative">
-              <ShoppingCart className="w-4 h-4" />
+            <Link href="/cart" className="flex items-center gap-1.5 text-white px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 border border-white/10 transition-all text-xs font-semibold relative">
+              <ShoppingCart className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">Cart</span>
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-pp-accent text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-black shadow-lg">
+                <span className="absolute -top-1.5 -right-1.5 bg-pp-accent text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-black shadow-lg">
                   {cartCount}
                 </span>
               )}
