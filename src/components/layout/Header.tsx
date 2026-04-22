@@ -78,7 +78,7 @@ function HeaderContent() {
                   pillipot
                 </span>
               </div>
-              <span className="mt-0.5 hidden max-w-[180px] truncate text-[7px] font-semibold uppercase tracking-[0.26em] text-white/68 min-[380px]:block min-[380px]:max-w-[220px] min-[380px]:text-[8px] md:max-w-none md:text-[9px] md:tracking-[0.32em]">
+              <span className="mt-0 block max-w-[180px] truncate text-[6px] font-semibold uppercase leading-none tracking-[0.22em] text-white/68 max-[360px]:text-[5px] min-[380px]:max-w-[220px] min-[380px]:text-[7px] md:max-w-none md:text-[8px] md:tracking-[0.28em]">
                 Marketplace Reimagined
               </span>
             </div>
