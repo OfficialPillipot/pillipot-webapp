@@ -597,7 +597,9 @@ export default function CheckoutPage() {
             )}
           </div>
 
-          <div className="lg:w-[340px] w-full sticky top-32">
+          <div
+            className={`lg:w-[340px] w-full self-start ${activeStep === "address" ? "lg:mt-14" : ""} lg:sticky lg:top-32`}
+          >
             <div className="bg-white rounded-2xl border border-gray-100 pp-shadow overflow-hidden">
               <h2 className="text-xs font-bold text-gray-400 tracking-widest p-5 border-b border-gray-100 uppercase">Price Details</h2>
               <div className="p-5 space-y-3 text-sm">
