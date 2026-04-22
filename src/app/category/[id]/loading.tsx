@@ -3,48 +3,92 @@ import Footer from "@/components/layout/Footer";
 
 export default function CategoryLoading() {
   return (
-    <div className="flex flex-col min-h-screen bg-pp-surface">
+    <div className="flex min-h-screen flex-col bg-pp-surface">
       <Header />
-      
-      {/* CategoryBar Skeleton */}
-      <div className="bg-white pp-shadow border-b border-gray-100 py-3">
-        <div className="pp-container flex items-center px-4 lg:px-8 gap-8 overflow-hidden">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="flex flex-col items-center gap-2 min-w-[72px]">
-              <div className="w-12 h-12 rounded-2xl bg-gray-100 animate-pulse" />
-              <div className="w-10 h-2 bg-gray-100 rounded animate-pulse" />
-            </div>
-          ))}
+
+      {/* CategoryBar skeleton (match sticky offset + sizing) */}
+      <div className="sticky top-16 z-30 border-b border-slate-200/70 bg-white/70 backdrop-blur-2xl">
+        <div className="pp-container py-2.5 md:py-3">
+          <div className="no-scrollbar flex items-center gap-3 overflow-x-auto">
+            {[...Array(10)].map((_, i) => (
+              <div
+                key={i}
+                className="flex min-w-[80px] flex-col items-center gap-2 rounded-[1.35rem] border border-white/40 bg-white/65 px-2.5 py-2.5 text-center md:min-w-[92px] md:rounded-[1.55rem] md:px-3 md:py-3"
+              >
+                <div className="h-10 w-10 rounded-xl bg-slate-100 animate-pulse md:h-12 md:w-12 md:rounded-2xl" />
+                <div className="h-2 w-12 rounded bg-slate-100 animate-pulse" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <main className="flex-1 pp-container px-4 py-8">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* Filters Sidebar Skeleton */}
-          <div className="hidden lg:flex flex-col w-60 shrink-0 gap-4">
-            <div className="bg-white rounded-2xl border border-gray-50 p-5 h-[400px]">
-              <div className="w-24 h-4 bg-gray-100 animate-pulse rounded mb-8" />
-              <div className="w-full h-2 bg-gray-100 animate-pulse rounded mb-4" />
-              <div className="w-full h-2 bg-gray-100 animate-pulse rounded mb-8" />
-              <div className="w-3/4 h-3 bg-gray-100 animate-pulse rounded mb-3" />
-              <div className="w-1/2 h-3 bg-gray-100 animate-pulse rounded mb-8" />
-            </div>
+      <main className="pp-container flex-1 py-6 md:py-8">
+        {/* Header strip skeleton (match category header height) */}
+        <section className="mb-6 rounded-[2rem] border border-white/60 bg-white/62 p-4 pp-shadow md:p-5">
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            <div className="h-3 w-14 rounded bg-slate-100 animate-pulse" />
+            <div className="h-3 w-3 rounded bg-slate-100 animate-pulse" />
+            <div className="h-3 w-24 rounded bg-slate-100 animate-pulse" />
           </div>
 
-          {/* Grid Skeleton */}
-          <div className="flex-1">
-            <div className="w-40 h-4 bg-gray-100 animate-pulse rounded mb-6" />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-8">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl border border-gray-50 p-5 h-[340px] flex flex-col gap-5">
-                  <div className="w-full h-[200px] bg-gray-100 animate-pulse rounded-xl" />
-                  <div className="w-3/4 h-4 bg-gray-100 animate-pulse rounded" />
-                  <div className="flex justify-between mt-auto">
-                    <div className="w-1/3 h-6 bg-gray-100 animate-pulse rounded" />
-                    <div className="w-10 h-10 bg-gray-100 animate-pulse rounded-full" />
-                  </div>
-                </div>
+          <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div className="h-7 w-56 rounded bg-slate-100 animate-pulse md:h-9 md:w-96" />
+            <div className="h-8 w-44 rounded-full bg-slate-100 animate-pulse" />
+          </div>
+        </section>
+
+        <div className="flex flex-col gap-4 lg:flex-row">
+          {/* FilterSidebar skeleton */}
+          <aside className="hidden lg:flex w-[300px] shrink-0 flex-col rounded-[1.8rem] border border-white/60 bg-white/72 pp-shadow">
+            <div className="border-b border-slate-100 p-5">
+              <div className="h-4 w-24 rounded bg-slate-100 animate-pulse" />
+            </div>
+            <div className="space-y-4 p-5">
+              <div className="h-3 w-28 rounded bg-slate-100 animate-pulse" />
+              <div className="h-10 w-full rounded-2xl bg-slate-100 animate-pulse" />
+              <div className="h-3 w-20 rounded bg-slate-100 animate-pulse" />
+              <div className="h-2 w-full rounded bg-slate-100 animate-pulse" />
+              <div className="h-2 w-5/6 rounded bg-slate-100 animate-pulse" />
+              <div className="mt-2 h-3 w-28 rounded bg-slate-100 animate-pulse" />
+              <div className="space-y-2">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-10 w-full rounded-2xl bg-slate-100 animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </aside>
+
+          {/* Results area skeleton */}
+          <div className="flex-1 rounded-[2rem] border border-white/60 bg-white/72 pp-shadow">
+            {/* Subcategory filter placeholder (height matches the real bar) */}
+            <div className="border-b border-slate-100 px-5 py-4">
+              <div className="h-8 w-full rounded-2xl bg-slate-100 animate-pulse" />
+            </div>
+
+            {/* Sort bar placeholder */}
+            <div className="no-scrollbar flex items-center gap-3 overflow-x-auto border-b border-slate-100 px-5 py-4 whitespace-nowrap">
+              <div className="h-3 w-16 rounded bg-slate-100 animate-pulse" />
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-9 w-36 rounded-full bg-slate-100 animate-pulse" />
               ))}
+            </div>
+
+            {/* Grid placeholder */}
+            <div className="p-4 md:p-5">
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+                {[...Array(8)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-[280px] rounded-[1.75rem] border border-white/55 bg-white/84 p-3 pp-shadow"
+                  >
+                    <div className="h-40 w-full rounded-[1.35rem] bg-slate-100 animate-pulse" />
+                    <div className="mt-4 h-4 w-5/6 rounded bg-slate-100 animate-pulse" />
+                    <div className="mt-3 h-3 w-2/3 rounded bg-slate-100 animate-pulse" />
+                    <div className="mt-6 h-6 w-28 rounded bg-slate-100 animate-pulse" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -54,3 +98,4 @@ export default function CategoryLoading() {
     </div>
   );
 }
+

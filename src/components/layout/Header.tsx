@@ -180,9 +180,9 @@ function HeaderContent() {
         </div>
 
         {searchOpen && (
-          <div className="relative border-t border-white/10 px-4 pb-4 md:hidden">
+          <div className="relative border-t border-white/10 bg-[#081120]/55 px-4 pb-4 pt-3 backdrop-blur-2xl md:hidden">
             <form onSubmit={handleSearch} className="relative mx-auto max-w-3xl">
-              <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-white/62">
+              <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-slate-400">
                 <Search className="h-4 w-4" />
               </div>
               <input
@@ -192,8 +192,14 @@ function HeaderContent() {
                 defaultValue={initialQuery}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search products, categories..."
-                className="h-12 w-full rounded-full border border-white/14 bg-white/12 pl-11 pr-4 text-sm font-medium text-white outline-none placeholder:text-white/55 focus:border-white/36 focus:bg-white/18"
+                className="h-12 w-full rounded-full border border-white/20 bg-white pl-11 pr-24 text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400 focus:border-sky-200 focus:ring-4 focus:ring-sky-200/40"
               />
+              <button
+                type="submit"
+                className="absolute right-1.5 top-1.5 inline-flex h-9 items-center justify-center rounded-full bg-pp-primary px-5 text-xs font-black uppercase tracking-[0.14em] text-white active:scale-[0.98]"
+              >
+                Go
+              </button>
             </form>
           </div>
         )}
