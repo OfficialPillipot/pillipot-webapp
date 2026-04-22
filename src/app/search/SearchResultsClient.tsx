@@ -1,6 +1,7 @@
 "use client";
 
 import ProductCard from "@/components/product/ProductCard";
+import { Product } from "@/lib/api";
 import { Frown } from "lucide-react";
 import Link from "next/link";
 
