@@ -27,14 +27,24 @@ export default function ProductCard({ product }: ProductCardProps) {
     }).format(num);
   };
 
+  const isOutOfStock = (product.stockQuantity ?? 0) <= 0;
+
   return (
-    <div className="bg-white flex flex-col group cursor-pointer transition-all duration-300 h-full border border-gray-100/60 rounded-2xl hover:border-pp-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 relative p-3 sm:p-4 overflow-hidden">
+    <div className={`bg-white flex flex-col transition-all duration-300 h-full border border-gray-100/60 rounded-2xl relative p-3 sm:p-4 overflow-hidden ${
+      isOutOfStock 
+        ? "opacity-75 pointer-events-none grayscale-[0.2]" 
+        : "group cursor-pointer hover:border-pp-primary/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1"
+    }`}>
       
       {/* Soft gradient background behind image for premium look */}
       <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-gray-50/50 to-transparent z-0 rounded-t-2xl pointer-events-none" />
 
       {/* Image */}
-      <Link href={`/product/${product.id}`} className="z-10 block">
+      <Link 
+        href={isOutOfStock ? "#" : `/product/${product.id}`} 
+        className="z-10 block"
+        tabIndex={isOutOfStock ? -1 : 0}
+      >
         <div className="relative w-full aspect-[4/5] sm:aspect-square mb-4 overflow-hidden rounded-xl bg-[#F8F9FA] flex items-center justify-center p-2 group-hover:bg-white transition-colors duration-500">
           <Image
             src={displayImage}
@@ -43,6 +53,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             className="object-contain transition-transform duration-700 group-hover:scale-110 mix-blend-multiply"
           />
+
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] flex items-center justify-center z-30">
+              <span className="bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-black tracking-widest uppercase shadow-lg">
+                Out of Stock
+              </span>
+            </div>
+          )}
 
           {/* ⭐ Rating bottom-left instead of right for better balance */}
           <div className="absolute bottom-2 left-2 flex items-center gap-1 bg-white/90 backdrop-blur-md shadow-sm border border-gray-100 text-gray-800 font-bold text-[11px] px-2 py-0.5 rounded-lg z-20">
