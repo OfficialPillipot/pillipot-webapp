@@ -143,6 +143,7 @@ html {
     radial-gradient(circle at top left, rgba(31, 111, 255, 0.12), transparent 26%),
     radial-gradient(circle at top right, rgba(255, 190, 92, 0.14), transparent 18%),
     linear-gradient(180deg, #f8fbff 0%, #f4f7fb 52%, #eef3fb 100%);
+  overflow-x: clip;
 }
 
 body {
@@ -150,6 +151,7 @@ body {
   background: var(--color-pp-surface);
   color: #081120;
   padding-bottom: 88px;
+  overflow-x: clip;
 }
 
 @media (min-width: 768px) {

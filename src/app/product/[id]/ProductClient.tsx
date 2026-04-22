@@ -139,13 +139,13 @@ export default function ProductClient({ product }: { product: Product }) {
               <div className="flex flex-col gap-3 sm:flex-row">
                 <button 
                   onClick={handleAddToCart} 
-                  className="flex flex-1 items-center justify-center gap-2 rounded-full border border-sky-100 bg-[#edf4ff] py-4 text-sm font-bold text-pp-primary"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-full border border-sky-100 bg-[#edf4ff] py-4 text-sm font-bold text-pp-primary hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white hover:shadow-[0_18px_40px_rgba(9,22,43,0.12)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pp-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <ShoppingCart className="w-5 h-5" /> ADD TO CART
                 </button>
                 <button 
                   onClick={handleBuyNow} 
-                  className="pp-button-primary flex flex-1 items-center justify-center gap-2 rounded-full py-4 text-sm font-bold"
+                  className="pp-button-primary flex flex-1 items-center justify-center gap-2 rounded-full py-4 text-sm font-bold hover:-translate-y-0.5 hover:shadow-[0_22px_48px_rgba(22,68,163,0.35)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pp-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <Zap className="w-5 h-5" /> BUY NOW
                 </button>
