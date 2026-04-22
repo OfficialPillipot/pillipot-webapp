@@ -72,11 +72,10 @@ export default function CategoryBar({ categories }: { categories: Category[] }) 
               <Link
                 key={category.name}
                 href={category.href}
-                className={`group flex min-w-[72px] flex-col items-center gap-1.5 rounded-[1.25rem] border px-2 py-2 text-center md:min-w-[92px] md:gap-2 md:rounded-[1.55rem] md:px-3 md:py-3 ${
-                  active
+                className={`group flex min-w-[72px] flex-col items-center gap-1.5 rounded-[1.25rem] border px-2 py-2 text-center md:min-w-[92px] md:gap-2 md:rounded-[1.55rem] md:px-3 md:py-3 ${active
                     ? "border-sky-200 bg-white shadow-[0_20px_40px_rgba(9,22,43,0.1)]"
                     : "border-white/40 bg-white/65 hover:border-sky-100 hover:bg-white"
-                }`}
+                  }`}
               >
                 <div
                   className={`relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br ${category.color} shadow-lg shadow-slate-900/12 md:h-12 md:w-12 md:rounded-2xl`}
@@ -94,9 +93,8 @@ export default function CategoryBar({ categories }: { categories: Category[] }) 
                   )}
                 </div>
                 <span
-                  className={`text-[9px] font-bold leading-tight md:text-[11px] ${
-                    active ? "text-pp-primary" : "text-slate-600 group-hover:text-slate-900"
-                  }`}
+                  className={`text-[6px] font-bold leading-[1.05] md:text-[11px] ${active ? "text-pp-primary" : "text-slate-600 group-hover:text-slate-900"
+                    }`}
                 >
                   {category.name}
                 </span>

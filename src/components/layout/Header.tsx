@@ -74,11 +74,11 @@ function HeaderContent() {
             </div>
             <div className="min-w-0 leading-none text-white">
               <div className="flex items-center gap-2">
-                <span className="max-w-[140px] truncate text-base font-black tracking-[-0.04em] min-[380px]:max-w-[180px] md:max-w-none md:text-[1.2rem]">
+                <span className="max-w-[140px] truncate text-sm font-black tracking-[-0.04em] min-[380px]:max-w-[180px] min-[380px]:text-base md:max-w-none md:text-[1.2rem]">
                   pillipot
                 </span>
               </div>
-              <span className="mt-0.5 hidden text-[9px] font-semibold uppercase tracking-[0.34em] text-white/68 md:block">
+              <span className="mt-0.5 block max-w-[180px] truncate text-[8px] font-semibold uppercase tracking-[0.28em] text-white/68 min-[380px]:max-w-[220px] md:max-w-none md:text-[9px] md:tracking-[0.34em]">
                 Marketplace Reimagined
               </span>
             </div>
