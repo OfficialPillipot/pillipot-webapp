@@ -61,7 +61,7 @@ export default function CategoryBar({ categories }: { categories: Category[] }) 
   };
 
   return (
-    <div className="sticky top-16 z-30 border-b border-slate-200/70 bg-white/88 backdrop-blur-2xl shadow-sm">
+    <div className="sticky top-16 z-40 border-b border-slate-200/70 bg-white/88 backdrop-blur-2xl shadow-sm">
       <div className="pp-container py-0">
         <div className="no-scrollbar flex items-center gap-0.5 overflow-x-auto sm:gap-1">
           {displayCategories.map((category) => {

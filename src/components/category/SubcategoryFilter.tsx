@@ -25,7 +25,7 @@ export default function SubcategoryFilter({
   };
 
   return (
-    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-3 px-4 bg-white/80 backdrop-blur-md border-b border-gray-100/50 sticky top-[calc(3rem+3.5rem)] md:top-[calc(3.5rem+3.5rem)] z-30">
+    <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-3 px-4 bg-white/80 backdrop-blur-md border-b border-gray-100/50 sticky top-[calc(4rem+4.75rem)] md:top-[calc(4rem+5rem)] z-20">
       <button
         onClick={() => handleSelect("")}
         className={`px-5 py-2 rounded-2xl text-xs font-bold transition-all whitespace-nowrap shadow-sm border ${
