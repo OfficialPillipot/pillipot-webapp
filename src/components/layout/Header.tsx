@@ -127,6 +127,16 @@ function HeaderContent() {
                       <p className="text-[10px] font-black uppercase tracking-[0.26em] text-slate-400">Account</p>
                     </div>
                     <Link
+                      href="/account"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-pp-primary"
+                    >
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-50 text-pp-primary">
+                        <User className="h-4 w-4" />
+                      </span>
+                      My Account
+                    </Link>
+                    <Link
                       href="/orders"
                       onClick={() => setUserMenuOpen(false)}
                       className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 hover:text-pp-primary"
@@ -209,7 +219,7 @@ function HeaderContent() {
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-slate-950/55 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
           <div className="absolute left-0 top-0 flex h-full w-[84vw] max-w-sm flex-col overflow-hidden border-r border-white/10 bg-[#081120] text-white animate-in slide-in-from-left">
-            <div className="pp-grid-bg relative overflow-hidden border-b border-white/10 p-6">
+            <div className="pp-grid-bg relative overflow-hidden border-b border-white/10 px-6 pb-6 pt-24">
               <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-sky-400/20 blur-3xl" />
               <div className="relative flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-pp-primary">
@@ -275,10 +285,10 @@ function HeaderContent() {
           <BottomNavItem href="/cart" icon={ShoppingCart} label="Cart" active={pathname === "/cart"} badge={cartCount} />
           <BottomNavItem href="/orders" icon={Package} label="Orders" active={pathname === "/orders"} />
           <BottomNavItem
-            href={user ? "/orders" : "/login"}
+            href={user ? "/account" : "/login"}
             icon={User}
             label="Account"
-            active={false}
+            active={pathname === "/account"}
             onClick={!user ? () => setIsLoginModalOpen(true) : undefined}
           />
         </div>
