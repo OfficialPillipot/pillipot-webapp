@@ -30,6 +30,7 @@ type Order = {
   total: number;
   customerName?: string;
   status: string;
+  trackingId?: string | null;
   items: OrderItem[];
 };
 
