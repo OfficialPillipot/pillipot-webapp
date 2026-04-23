@@ -23,8 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  
-  // Fetch instantly on the server via Next.js RSC caching
+
   const product = await getProduct(id);
 
   if (!product) {
