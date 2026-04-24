@@ -13,7 +13,7 @@ import { useToast } from "@/context/ToastContext";
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
-import { getProductOffers } from "@/lib/api";
+import { getProductOffers, getProductReviews } from "@/lib/api";
 
 export default function ProductClient({ product }: { product: Product }) {
   const router = useRouter();
@@ -69,6 +69,7 @@ export default function ProductClient({ product }: { product: Product }) {
   const goPrev = () => setSelectedIndex((i) => (i - 1 + allImages.length) % allImages.length);
 
   const { data: offers = [] } = useSWR(swrKeys.productOffers(product.id), () => getProductOffers(product.id));
+  const { data: reviews = [] } = useSWR(swrKeys.productReviews(product.id), () => getProductReviews(product.id));
 
   return (
     <>
@@ -256,6 +257,54 @@ export default function ProductClient({ product }: { product: Product }) {
                 </div>
               </div>
             )}
+
+            {/* Reviews Section */}
+            <div className="rounded-[1.8rem] border border-white/60 bg-white/86 p-8 pp-shadow">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-xl font-black text-slate-950">Customer Reviews</h3>
+                {reviews.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-black text-pp-primary">{product.rating || 0}</span>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className={`w-4 h-4 ${s <= (product.rating || 0) ? "fill-pp-accent-warm text-pp-accent-warm" : "text-gray-100"}`} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {reviews.length === 0 ? (
+                <div className="py-10 text-center">
+                  <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">No reviews yet</p>
+                  <p className="text-xs text-slate-300 mt-2">Be the first to review this product after purchase!</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {reviews.map((review) => (
+                    <div key={review.id} className="p-6 rounded-3xl bg-pp-surface border border-white/60">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-pp-primary/10 flex items-center justify-center text-pp-primary font-black text-sm">
+                            {review.customer?.customerName?.charAt(0).toUpperCase() || "?"}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-slate-950">{review.customer?.customerName || "Anonymous"}</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{new Date(review.createdAt).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 bg-pp-success/10 text-pp-success px-2 py-1 rounded-lg text-xs font-black">
+                          {review.rating} <Star className="w-3 h-3 fill-current" />
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-600 leading-relaxed font-medium">
+                        {review.comment}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
         </div>

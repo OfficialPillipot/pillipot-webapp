@@ -427,6 +427,7 @@ export async function updateAddress(token: string, id: string, data: Partial<Cus
 }
 
 export type OrderApiItem = {
+  id: string;
   productId: string;
   productName: string;
   quantity: number;
@@ -506,19 +507,58 @@ export async function cancelOrderApi(token: string, orderId: string): Promise<bo
   return res.ok;
 }
 
-export type ReviewResponse = {
-  success?: boolean;
-  message?: string;
+export type Review = {
+  id: string;
+  productId: string;
+  customerId: string;
+  orderId: string | null;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  customer: {
+    customerName: string;
+  };
 };
 
-export async function submitReview(token: string, productId: string, rating: number, comment?: string): Promise<ReviewResponse> {
-  return fetchJson<ReviewResponse>("/customer/reviews", {
+export async function submitReview(
+  token: string, 
+  productId: string, 
+  rating: number, 
+  orderId: string, 
+  comment?: string
+): Promise<any> {
+  const res = await fetch(`${API_URL}/customer/reviews`, {
     method: "POST",
     cache: "no-store",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ productId, rating, comment }),
+    body: JSON.stringify({ productId, rating, orderId, comment }),
   });
+
+  if (!res.ok) {
+    let msg = "Failed to submit review";
+    try {
+      const data = await res.json();
+      if (data.message) {
+        msg = Array.isArray(data.message) ? data.message[0] : data.message;
+      } else if (data.error) {
+        msg = data.error;
+      }
+    } catch {}
+    throw new Error(msg);
+  }
+
+  return res.json();
+}
+
+export async function getProductReviews(productId: string): Promise<Review[]> {
+  try {
+    return await fetchJson<Review[]>(`/customer/reviews/${productId}`, {
+      cache: "no-store",
+    });
+  } catch {
+    return [];
+  }
 }

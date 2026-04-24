@@ -17,6 +17,7 @@ import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
 
 type OrderItem = {
+  id: string;
   productId: string;
   productName: string;
   quantity: number;
@@ -58,7 +59,7 @@ export default function MyOrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [reviewingProduct, setReviewingProduct] = useState<{ id: string; name: string; imageUrl?: string } | null>(null);
+  const [reviewingProduct, setReviewingProduct] = useState<{ id: string; name: string; imageUrl?: string; orderLineId: string } | null>(null);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
@@ -124,7 +125,7 @@ export default function MyOrdersPage() {
     setIsCancelling(false);
   };
 
-  const handleReviewClick = (product: { id: string; name: string; imageUrl?: string }) => {
+  const handleReviewClick = (product: { id: string; name: string; imageUrl?: string; orderLineId: string }) => {
     setReviewingProduct(product);
     setRating(0);
     setComment("");
@@ -136,13 +137,13 @@ export default function MyOrdersPage() {
     if (!token || !reviewingProduct || rating === 0) return;
     setIsSubmittingReview(true);
     try {
-      await submitReview(token, reviewingProduct.id, rating, comment);
+      await submitReview(token, reviewingProduct.id, rating, reviewingProduct.orderLineId, comment);
       setShowReviewModal(false);
       setReviewingProduct(null);
       success("Review submitted successfully!");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      error("Failed to submit review. Please try again.");
+      error(err.message || "Failed to submit review. Please try again.");
     } finally {
       setIsSubmittingReview(false);
     }
@@ -448,7 +449,7 @@ export default function MyOrdersPage() {
                                   </button>
                                   {isDelivered && (
                                     <button
-                                      onClick={() => handleReviewClick({ id: item.productId, name: item.productName, imageUrl: item.imageUrl })}
+                                      onClick={() => handleReviewClick({ id: item.productId, name: item.productName, imageUrl: item.imageUrl, orderLineId: item.id })}
                                       className="rounded-full bg-[#edf4ff] px-4 py-2 text-[10px] font-black uppercase tracking-wider text-pp-primary transition-all hover:bg-pp-primary hover:text-white"
                                     >
                                       Write a review

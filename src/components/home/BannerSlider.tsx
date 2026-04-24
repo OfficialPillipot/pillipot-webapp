@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { Banner } from "@/lib/api";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -55,10 +55,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
 
               <div className="pp-container relative flex min-h-[280px] items-center py-8 sm:min-h-[340px] md:min-h-[470px] md:py-10">
                 <div className="max-w-2xl text-white">
-                  <div className="pp-chip border-white/18 bg-white/12 text-white">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Curated spotlight
-                  </div>
+
 
                   <h2 className="mt-4 max-w-xl text-2xl font-black tracking-[-0.06em] text-white sm:text-4xl md:mt-5 md:text-6xl">
                     {banner.title}

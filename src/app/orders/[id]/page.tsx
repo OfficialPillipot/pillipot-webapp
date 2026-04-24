@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -20,16 +20,19 @@ import {
   Calendar,
   Loader2,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Star
 } from "lucide-react";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
+import ReviewModal from "@/components/product/ReviewModal";
 
 export default function OrderDetailsPage() {
   const { id } = useParams();
   const { token } = useAuth();
   const router = useRouter();
   const orderId = typeof id === "string" ? id : Array.isArray(id) ? id[0] : "";
+  const [selectedProduct, setSelectedProduct] = useState<{ id: string, name: string, orderLineId: string } | null>(null);
   const { data: order, isLoading } = useSWR(
     token && orderId ? swrKeys.orderDetails(token, orderId) : null,
     ([, t, oid]) => getOrderDetails(t, oid),
@@ -194,12 +197,22 @@ export default function OrderDetailsPage() {
                       <Package className="w-10 h-10 text-gray-300" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-black text-gray-900 mb-1 hover:text-pp-primary cursor-pointer transition-colors">{item.productName}</h3>
+                      <h3 className="text-lg font-black text-gray-900 mb-1 hover:text-pp-primary cursor-pointer transition-colors" onClick={() => router.push(`/product/${item.productId}`)}>{item.productName}</h3>
                       <div className="flex gap-4 text-sm font-bold text-gray-400">
                         <span>Quantity: <span className="text-gray-700">{item.quantity}</span></span>
                         <span>•</span>
                         <span>Price: <span className="text-gray-700">{formatPrice(item.sellingAmount)}</span></span>
                       </div>
+                      
+                      {order.status === "delivered" && (
+                        <button 
+                          onClick={() => setSelectedProduct({ id: item.productId, name: item.productName, orderLineId: item.id })}
+                          className="mt-4 flex items-center gap-2 text-pp-primary text-xs font-black uppercase tracking-widest hover:text-pp-primary-dark transition-colors"
+                        >
+                          <Star className="w-4 h-4" />
+                          Rate & Review Product
+                        </button>
+                      )}
                     </div>
                     <div className="text-right w-full sm:w-auto">
                       <p className="text-xl font-black text-pp-primary">{formatPrice(item.sellingAmount + (item.deliveryFee || 0))}</p>
@@ -263,6 +276,16 @@ export default function OrderDetailsPage() {
           </div>
         </div>
       </main>
+
+      {selectedProduct && (
+        <ReviewModal
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          productId={selectedProduct.id}
+          productName={selectedProduct.name}
+          orderId={selectedProduct.orderLineId}
+        />
+      )}
 
       <Footer />
     </div>
