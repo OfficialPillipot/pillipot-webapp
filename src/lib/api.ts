@@ -422,6 +422,24 @@ export async function verifyPayment(body: {
   return res.json();
 }
 
+export async function failPayment(body: {
+  razorpay_order_id: string;
+  razorpay_payment_id?: string;
+  errorCode?: string;
+  errorDescription?: string;
+}): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_URL}/orders/fail-payment`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    return { success: false };
+  }
+  return res.json();
+}
+
 export async function deleteAddress(token: string, id: string): Promise<boolean> {
   const res = await fetch(`${API_URL}/customer/addresses/${id}`, {
     method: "DELETE",

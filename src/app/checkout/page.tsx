@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { Check, ShieldCheck, MapPin, CreditCard, Banknote, Smartphone, Plus, Trash2, Home, Briefcase, Loader2, PencilLine, Package, X } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
-import { getAddresses, addAddress, autofillAddress, checkout, verifyPayment, type CustomerAddress, deleteAddress, updateAddress } from "@/lib/api";
+import { getAddresses, addAddress, autofillAddress, checkout, verifyPayment, failPayment, type CustomerAddress, deleteAddress, updateAddress } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
@@ -299,6 +299,21 @@ export default function CheckoutPage() {
         };
 
         const rzp = new (window as any).Razorpay(options);
+
+        rzp.on("payment.failed", async (response: any) => {
+          try {
+            await failPayment({
+              razorpay_order_id: response.error.metadata.order_id,
+              razorpay_payment_id: response.error.metadata.payment_id,
+              errorCode: response.error.code,
+              errorDescription: response.error.description,
+            });
+          } catch (err) {
+            console.error("Failed to notify backend of payment failure:", err);
+          }
+          error(response.error.description || "Payment failed");
+        });
+
         rzp.open();
         return; // Don't setIsPlacingOrder(false) — Razorpay modal is open
       }
