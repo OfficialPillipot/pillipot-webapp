@@ -187,6 +187,15 @@ export async function login(username: string, password: string): Promise<{ acces
   }
 }
 
+export async function forgotPassword(username: string): Promise<{ message: string }> {
+  return fetchJson<{ message: string }>("/auth/customer/forgot-password", {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username }),
+  });
+}
+
 export async function register(dto: RegisterDto): Promise<{ accessToken: string; user: User } | null> {
   try {
     return await fetchJson<{ accessToken: string; user: User }>("/auth/customer/register", {
@@ -209,6 +218,18 @@ export async function getMe(token: string): Promise<User | null> {
   } catch {
     return null;
   }
+}
+
+export async function changePasswordApi(token: string, currentPassword: string, newPassword: string): Promise<{ success: boolean }> {
+  return fetchJson<{ success: boolean }>("/auth/change-password", {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
 }
 
 // Wishlist

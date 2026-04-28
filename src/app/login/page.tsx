@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { login as loginApi } from "@/lib/api";
+import { login as loginApi, forgotPassword } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { LuEye, LuEyeOff, LuLock, LuUser, LuArrowRight, LuShoppingBag } from "react-icons/lu";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [view, setView] = useState<"login" | "forgot">("login");
+  const [forgotUsername, setForgotUsername] = useState("");
+
   const { login } = useAuth();
   const router = useRouter();
 
@@ -31,6 +35,24 @@ export default function LoginPage() {
       }
     } catch (err) {
       setError("An error occurred. Please check your connection.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await forgotPassword(forgotUsername);
+      setSuccess(res.message);
+      // Wait a bit then go back to login
+      setTimeout(() => setView("login"), 5000);
+    } catch (err: any) {
+      setError(err.message || "Failed to process request.");
     } finally {
       setLoading(false);
     }
@@ -59,80 +81,140 @@ export default function LoginPage() {
                 <span className="text-pp-accent">t</span>
               </span>
             </Link>
-            <h1 className="text-3xl font-black text-gray-900">Welcome Back</h1>
-            <p className="text-gray-500 font-medium">Please enter your details to sign in to your account.</p>
+            <h1 className="text-3xl font-black text-gray-900">
+              {view === "login" ? "Welcome Back" : "Reset Password"}
+            </h1>
+            <p className="text-gray-500 font-medium">
+              {view === "login" 
+                ? "Please enter your details to sign in to your account."
+                : "Enter your username or email to receive a temporary password."}
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-red-600 text-sm font-semibold animate-shake">
-                {error}
-              </div>
-            )}
+          {view === "login" ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-red-600 text-sm font-semibold animate-shake">
+                  {error}
+                </div>
+              )}
 
-            <div className="space-y-5">
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Username</label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-pp-primary transition-colors">
+                      <LuUser className="w-5 h-5" />
+                    </div>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                      placeholder="Enter your username"
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-pp-primary focus:ring-4 focus:ring-pp-primary/5 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center px-1">
+                    <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Password</label>
+                    <button 
+                      type="button"
+                      onClick={() => setView("forgot")}
+                      className="text-xs font-bold text-pp-primary hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-pp-primary transition-colors">
+                      <LuLock className="w-5 h-5" />
+                    </div>
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="••••••••"
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-12 outline-none focus:bg-white focus:border-pp-primary focus:ring-4 focus:ring-pp-primary/5 transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-pp-primary transition-colors"
+                    >
+                      {showPassword ? <LuEyeOff className="w-5 h-5" /> : <LuEye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 px-1">
+                <input type="checkbox" id="remember" className="w-4 h-4 rounded-lg bg-gray-50 border-gray-100 text-pp-primary focus:ring-pp-primary/10 accent-pp-primary" />
+                <label htmlFor="remember" className="text-sm font-medium text-gray-600 cursor-pointer">Remember for 30 days</label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full pp-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:hover:scale-100"
+              >
+                {loading ? "Signing in..." : (
+                  <>
+                    Sign in <LuArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={handleForgotSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-red-600 text-sm font-semibold animate-shake">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="bg-green-50 border border-green-100 p-4 rounded-xl text-green-600 text-sm font-semibold">
+                  {success}
+                </div>
+              )}
+
               <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Username</label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Username or Email</label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-pp-primary transition-colors">
                     <LuUser className="w-5 h-5" />
                   </div>
                   <input
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    value={forgotUsername}
+                    onChange={(e) => setForgotUsername(e.target.value)}
                     required
-                    placeholder="Enter your username"
+                    placeholder="Enter your registered username"
                     className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:bg-white focus:border-pp-primary focus:ring-4 focus:ring-pp-primary/5 transition-all"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center px-1">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Password</label>
-                  <Link href="#" className="text-xs font-bold text-pp-primary hover:underline">Forgot password?</Link>
-                </div>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-pp-primary transition-colors">
-                    <LuLock className="w-5 h-5" />
-                  </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="••••••••"
-                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl py-4 pl-12 pr-12 outline-none focus:bg-white focus:border-pp-primary focus:ring-4 focus:ring-pp-primary/5 transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-pp-primary transition-colors"
-                  >
-                    {showPassword ? <LuEyeOff className="w-5 h-5" /> : <LuEye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-            </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full pp-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:hover:scale-100"
+              >
+                {loading ? "Processing..." : "Send Temporary Password"}
+              </button>
 
-            <div className="flex items-center gap-3 px-1">
-              <input type="checkbox" id="remember" className="w-4 h-4 rounded-lg bg-gray-50 border-gray-100 text-pp-primary focus:ring-pp-primary/10 accent-pp-primary" />
-              <label htmlFor="remember" className="text-sm font-medium text-gray-600 cursor-pointer">Remember for 30 days</label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full pp-gradient text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:hover:scale-100"
-            >
-              {loading ? "Signing in..." : (
-                <>
-                  Sign in <LuArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </>
-              )}
-            </button>
-          </form>
+              <button
+                type="button"
+                onClick={() => setView("login")}
+                className="w-full text-center text-pp-primary font-bold hover:underline"
+              >
+                Back to Login
+              </button>
+            </form>
+          )}
 
           <p className="text-center text-gray-500 font-medium">
             Don&apos;t have an account?{" "}
