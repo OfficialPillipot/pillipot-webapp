@@ -53,7 +53,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
               <div className="absolute inset-0 " />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,177,195,0.32),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(246,126,54,0.25),transparent_20%)]" />
 
-              <div className="pp-container relative flex min-h-[125px] items-center py-8 sm:min-h-[340px] md:min-h-[406px] md:py-10">
+              <div className="pp-container relative flex min-h-[165px] items-center py-8 sm:min-h-[340px] md:min-h-[406px] md:py-10">
                 <div className="max-w-2xl text-white">
 
 

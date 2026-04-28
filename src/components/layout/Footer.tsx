@@ -8,7 +8,9 @@ import {
   LuShieldCheck,
   LuCreditCard,
   LuTruck,
+
 } from "react-icons/lu";
+import { FaWhatsapp } from "react-icons/fa";
 
 const footerLinks = [
   {
@@ -45,8 +47,8 @@ const trustBadges = [
 
 const socialLinks = [
   { icon: LuGlobe, href: "https://www.pillipot.com", label: "Website" },
-  { icon: LuInstagram, href: "https://www.instagram.com/eden_e_cart?utm_source=qr&igsh=MXNydDNvMG0wNHczag==", label: "Instagram" },
-  { icon: LuMessageCircle, href: "https://wa.me/message/HNFKP2BAWYBSJ1", label: "WhatsApp" },
+  { icon: LuInstagram, href: "https://www.instagram.com/pillipot_?igsh=MXNydDNvMG0wNHczag==", label: "Instagram" },
+  { icon: FaWhatsapp, href: "https://wa.me/message/HNFKP2BAWYBSJ1", label: "WhatsApp" },
 ];
 
 export default function Footer() {
