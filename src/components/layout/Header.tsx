@@ -67,7 +67,7 @@ function HeaderContent() {
           </button> */}
 
           <Link href="/" className="group flex min-w-0 items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-2xl border border-white/25 bg-white/90 shadow-[0_20px_50px_rgba(10,25,60,0.22)] transition-transform duration-300 group-hover:-translate-y-0.5 min-[360px]:h-9 min-[360px]:w-9">
+            {/* <div className="flex h-8 w-8 items-center justify-center rounded-2xl border border-white/25 bg-white/90 shadow-[0_20px_50px_rgba(10,25,60,0.22)] transition-transform duration-300 group-hover:-translate-y-0.5 min-[360px]:h-9 min-[360px]:w-9">
               <span className="bg-linear-to-br from-pp-accent via-pp-primary to-pp-success bg-clip-text text-base font-black text-transparent min-[360px]:text-lg">
                 P
               </span>
@@ -85,7 +85,9 @@ function HeaderContent() {
                   <span className="text-pp-accent">t</span>
                 </span>
               </div>
-            </div>
+            </div> */}
+
+            <img className="h-12" src="/logopilli.png" alt="" />
           </Link>
 
           <div className="ml-auto hidden items-center gap-3 md:flex">

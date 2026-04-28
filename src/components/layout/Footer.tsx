@@ -22,16 +22,17 @@ const footerLinks = [
     title: "Help",
     links: [
       { label: "Track My Order", href: "/orders" },
-      { label: "Shipping Info", href: "/privacy-policy" },
+      { label: "Shipping Info", href: "/shipping-info" },
+      { label: "Return & Refund", href: "/return-and-refund" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About Pillipot", href: "/privacy-policy" },
+      { label: "About Pillipot", href: "/about" },
       { label: "Privacy Policy", href: "/privacy-policy" },
-      { label: "Terms of Service", href: "/privacy-policy" },
-      { label: "Contact Us", href: "/privacy-policy" },
+      { label: "Terms of Service", href: "/terms-of-service" },
+      { label: "Contact Us", href: "/contact-us" },
     ],
   },
 ];
@@ -170,7 +171,7 @@ export default function Footer() {
           <span>© {new Date().getFullYear()} Pillipot Marketplace. All rights reserved.</span>
           <div className="flex items-center gap-4">
             <Link href="/privacy-policy" className="hover:text-white/70 transition-colors">Privacy</Link>
-            <Link href="/privacy-policy" className="hover:text-white/70 transition-colors">Terms</Link>
+            <Link href="/terms-of-service" className="hover:text-white/70 transition-colors">Terms</Link>
           </div>
         </div>
 
