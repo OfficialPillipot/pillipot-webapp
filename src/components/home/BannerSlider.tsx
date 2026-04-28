@@ -27,7 +27,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
         pagination={{ clickable: true, dynamicBullets: true }}
         navigation
         modules={[Autoplay, Pagination, Navigation]}
-        className="banner-swiper overflow-hidden rounded-[2rem] border border-white/60 shadow-[0_30px_80px_rgba(9,22,43,0.16)]"
+        className="banner-swiper overflow-hidden rounded-2xl border border-white/60 shadow-[0_30px_80px_rgba(9,22,43,0.16)]"
         style={
           {
             "--swiper-navigation-color": "#ffffff",
@@ -39,7 +39,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
           <SwiperSlide key={banner.id}>
             <Link
               href={banner.linkUrl || "#"}
-              className="group relative block min-h-[280px] overflow-hidden sm:min-h-[340px] md:min-h-[470px]"
+              className="group relative block overflow-hidden sm:min-h-[340px] "
             >
               <Image
                 src={banner.imageUrl}
@@ -50,16 +50,16 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
 
-              <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(8,17,32,0.86)_12%,rgba(8,17,32,0.48)_40%,rgba(8,17,32,0.12)_70%,rgba(8,17,32,0.34)_100%)]" />
+              <div className="absolute inset-0 " />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,177,195,0.32),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(246,126,54,0.25),transparent_20%)]" />
 
-              <div className="pp-container relative flex min-h-[280px] items-center py-8 sm:min-h-[340px] md:min-h-[470px] md:py-10">
+              <div className="pp-container relative flex min-h-[125px] items-center py-8 sm:min-h-[340px] md:min-h-[406px] md:py-10">
                 <div className="max-w-2xl text-white">
 
 
-                  <h2 className="mt-4 max-w-xl text-2xl font-black tracking-[-0.06em] text-white sm:text-4xl md:mt-5 md:text-6xl">
+                  {/* <h2 className="mt-4 max-w-xl text-2xl font-black tracking-[-0.06em] text-white sm:text-4xl md:mt-5 md:text-6xl">
                     {banner.title}
-                  </h2>
+                  </h2> */}
 
                   {banner.description ? (
                     <p className="mt-3 max-w-lg text-xs leading-6 text-white/78 sm:text-sm sm:leading-7 md:mt-5 md:text-base">
