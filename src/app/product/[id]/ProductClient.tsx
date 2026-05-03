@@ -96,7 +96,7 @@ export default function ProductClient({ product }: { product: Product }) {
   return (
     <>
     <div className="min-h-screen bg-pp-surface">
-      <main className="pp-container max-sm:!p-0 sm:pb-10 sm:pt-6">
+      <main className="pp-container max-sm:!px-0 max-sm:!pt-0 max-sm:!pb-[calc(7rem+env(safe-area-inset-bottom))] sm:pb-10 sm:pt-6">
         <div className="overflow-hidden sm:rounded-[2rem] max-sm:border-x-0 border-y sm:border border-white/60 bg-white/72 sm:pp-shadow">
         
         <div className="flex items-center justify-between px-4 pt-4">
@@ -170,16 +170,16 @@ export default function ProductClient({ product }: { product: Product }) {
                 </div>
               </div>
 
-              <div className="flex flex-row gap-2 sm:gap-3">
+              <div className="flex flex-row gap-2 sm:gap-3 max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:z-[100] max-sm:bg-white max-sm:p-3 max-sm:pb-[calc(0.75rem+env(safe-area-inset-bottom))] max-sm:shadow-[0_-10px_30px_rgba(0,0,0,0.08)]">
                 <button 
                   onClick={handleAddToCart} 
-                  className="flex flex-1 items-center justify-center gap-2 rounded-full border border-pp-cyan/20 bg-pp-surface-alt py-4 text-sm font-bold text-pp-primary hover:-translate-y-0.5 hover:border-pp-cyan/40 hover:bg-white hover:shadow-[0_18px_40px_rgba(9,22,43,0.12)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pp-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-pp-cyan/20 bg-pp-surface-alt py-4 text-sm font-bold text-pp-primary hover:-translate-y-0.5 hover:border-pp-cyan/40 hover:bg-white hover:shadow-[0_18px_40px_rgba(9,22,43,0.12)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pp-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <LuShoppingCart className="w-5 h-5" /> ADD TO CART
                 </button>
                 <button 
                   onClick={handleBuyNow} 
-                  className="pp-button-primary flex flex-1 items-center justify-center gap-2 rounded-full py-4 text-sm font-bold hover:-translate-y-0.5 hover:shadow-[0_22px_48px_rgba(22,68,163,0.35)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pp-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="animate-attention pp-button-primary flex flex-1 items-center justify-center gap-2 rounded-xl py-4 text-sm font-bold hover:-translate-y-0.5 hover:shadow-[0_22px_48px_rgba(22,68,163,0.35)] active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pp-primary/20 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   <LuZap className="w-5 h-5" /> BUY NOW
                 </button>
@@ -387,6 +387,16 @@ export default function ProductClient({ product }: { product: Product }) {
           )}
         </div>
       )}
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes attention-hop {
+          0%, 90%, 100% { transform: translate(var(--tw-translate-x), 0px) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+          95% { transform: translate(var(--tw-translate-x), -4px) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y)); }
+        }
+        .animate-attention {
+          animation: attention-hop 5s cubic-bezier(0.28, 0.84, 0.42, 1) infinite;
+        }
+      `}} />
     </>
   );
 }

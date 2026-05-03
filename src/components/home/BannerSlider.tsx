@@ -19,7 +19,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
   if (!banners?.length) return null;
 
   return (
-    <section className="pp-container pt-5">
+    <section className="pp-container pt-1">
       <Swiper
         spaceBetween={20}
         centeredSlides
