@@ -60,7 +60,7 @@ export default function Footer() {
       <div className="pp-container relative">
 
         {/* Trust badges strip */}
-        <div className="grid grid-cols-1 gap-3 border-b border-white/8 py-6 sm:grid-cols-3 md:py-8">
+        <div className="hidden sm:grid gap-3 border-b border-white/8 py-6 sm:grid-cols-3 md:py-8">
           {trustBadges.map((badge) => (
             <div key={badge.label} className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/8">
