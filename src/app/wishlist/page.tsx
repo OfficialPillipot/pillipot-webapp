@@ -37,9 +37,7 @@ export default function WishlistPage() {
             <LuHeart className="h-12 w-12 text-pp-accent/40" />
           </div>
           <h2 className="mb-2 text-3xl font-black tracking-[-0.04em] text-slate-950">Your wishlist is empty</h2>
-          <p className="mb-8 max-w-xs text-center text-sm leading-7 text-slate-500">
-            Save items you love to your wishlist. Review them anytime and easily move them to the cart.
-          </p>
+
           <Link
             href="/"
             className="pp-button-primary rounded-full px-10 py-3 text-sm font-bold"

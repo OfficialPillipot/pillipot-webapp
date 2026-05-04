@@ -78,7 +78,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           )}
 
           {/* Product image */}
-          <Link href={`/product/${product.id}`} className="block aspect-[4/3] w-full overflow-hidden rounded-lg bg-pp-surface">
+          <div className="block aspect-[4/3] w-full overflow-hidden rounded-lg bg-pp-surface">
             <Image
               src={displayImage}
               alt={product.name}
@@ -86,7 +86,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               width={300}
               height={225}
             />
-          </Link>
+          </div>
         </div>
 
         {/* Badges row */}
