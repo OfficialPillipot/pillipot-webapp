@@ -53,7 +53,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
               <div className="absolute inset-0 " />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,177,195,0.32),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(246,126,54,0.25),transparent_20%)]" />
 
-              <div className="pp-container relative flex min-h-[125px] items-center py-8 sm:min-h-[340px] md:min-h-[406px] md:py-10">
+              <div className="pp-container relative flex min-h-[165px] items-center py-8 sm:min-h-[340px] md:min-h-[406px] md:py-10">
                 <div className="max-w-2xl text-white">
 
 
@@ -68,13 +68,10 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
                   ) : null}
 
                   {banner.linkUrl ? (
-                    <div className="mt-5 flex flex-wrap items-center gap-2 sm:mt-8 sm:gap-3">
+                    <div className="hidden sm:flex mt-5 flex-wrap items-center gap-2 sm:mt-8 sm:gap-3">
                       <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-xs font-bold text-[#123468] shadow-[0_20px_45px_rgba(0,0,0,0.18)] sm:px-6 sm:py-3 sm:text-sm">
                         Shop now
                         <LuArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                      <span className="rounded-full border border-white/16 bg-white/8 px-3 py-2 text-[11px] font-semibold text-white/75 sm:px-4 sm:py-3 sm:text-xs">
-                        Fast-moving picks and latest launches
                       </span>
                     </div>
                   ) : null}

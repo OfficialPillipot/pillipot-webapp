@@ -8,7 +8,9 @@ import {
   LuShieldCheck,
   LuCreditCard,
   LuTruck,
+
 } from "react-icons/lu";
+import { FaWhatsapp } from "react-icons/fa";
 
 const footerLinks = [
   {
@@ -45,8 +47,8 @@ const trustBadges = [
 
 const socialLinks = [
   { icon: LuGlobe, href: "https://www.pillipot.com", label: "Website" },
-  { icon: LuInstagram, href: "https://www.instagram.com/eden_e_cart?utm_source=qr&igsh=MXNydDNvMG0wNHczag==", label: "Instagram" },
-  { icon: LuMessageCircle, href: "https://wa.me/message/HNFKP2BAWYBSJ1", label: "WhatsApp" },
+  { icon: LuInstagram, href: "https://www.instagram.com/pillipot_?igsh=MXNydDNvMG0wNHczag==", label: "Instagram" },
+  { icon: FaWhatsapp, href: "https://wa.me/message/HNFKP2BAWYBSJ1", label: "WhatsApp" },
 ];
 
 export default function Footer() {
@@ -78,27 +80,15 @@ export default function Footer() {
           {/* Brand column */}
           <div>
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white">
-                <span className="bg-gradient-to-br from-pp-accent via-pp-primary to-pp-success bg-clip-text text-base font-black text-transparent">
-                  P
-                </span>
-              </div>
-              <span className="flex items-center text-lg font-black tracking-[-0.04em]">
-                <span className="text-pp-accent">p</span>
-                <span className="text-pp-cyan">i</span>
-                <span className="text-pp-cyan">l</span>
-                <span className="text-pp-primary">l</span>
-                <span className="text-pp-primary">i</span>
-                <span className="text-pp-accent-warm">p</span>
-                <span className="text-pp-success">o</span>
-                <span className="text-pp-accent">t</span>
-              </span>
+              <img className="h-12" src="/logopilli.png" alt="" />
+
+
             </div>
 
-            <p className="mt-4 max-w-[240px] text-[0.82rem] leading-[1.7] text-white/48">
+            {/* <p className="mt-4 max-w-[240px] text-[0.82rem] leading-[1.7] text-white/48">
               Your trusted online marketplace — curated products, fast delivery,
               and a seamless shopping experience.
-            </p>
+            </p> */}
 
             {/* Contact */}
             <div className="mt-5 space-y-2.5">
