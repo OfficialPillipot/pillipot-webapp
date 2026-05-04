@@ -717,7 +717,7 @@ function CheckoutContent() {
               </div>
               <div className="p-5 space-y-3">
                 {/* COD Option */}
-                <div
+                {/* <div
                   onClick={() => setSelectedPayment("cod")}
                   className={`border-2 rounded-xl p-5 cursor-pointer transition-all ${selectedPayment === "cod"
                     ? "border-pp-primary bg-pp-surface-alt"
@@ -734,7 +734,7 @@ function CheckoutContent() {
                       <span className="text-xs text-pp-success font-semibold">Pay when you receive</span>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Razorpay Online Payment Option */}
                 <div
