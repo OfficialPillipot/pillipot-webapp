@@ -100,7 +100,7 @@ export default function Footer() {
                 support.pillipot@gmail.com
               </a>
               <a
-                href="9024063005"
+                href="tel:+919024063005"
                 className="flex items-center gap-2.5 text-[0.8rem] text-white/55 transition-colors hover:text-white"
               >
                 <LuPhone className="h-3.5 w-3.5 text-white/30" />
