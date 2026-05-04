@@ -36,7 +36,8 @@ export default async function CategoryPage({
   const [products, cList, subcategories] = await Promise.all([
     getProducts(
       id,
-      undefined,
+      undefined, // search
+      undefined, // tag
       subId,
       minPrice ? Number(minPrice) : undefined,
       maxPrice ? Number(maxPrice) : undefined,

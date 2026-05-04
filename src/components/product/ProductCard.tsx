@@ -61,45 +61,63 @@ export default function ProductCard({ product }: ProductCardProps) {
         href={isOutOfStock ? "#" : `/product/${product.id}`}
         className="relative block"
       >
-        <div className="relative aspect-[1/1] overflow-hidden bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] p-4">
-          <Image
-            src={displayImage}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 20vw"
-            className="object-contain p-3 transition-transform duration-700 group-hover:scale-105"
-          />
-
-          {/* Badges row */}
-          <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1.5">
-            {discount > 0 ? (
-              <span className="pp-badge-discount">{discount}% off</span>
-            ) : null}
-            {product.brand ? (
-              <span className="pp-badge-brand">{product.brand}</span>
-            ) : null}
-          </div>
-
-          {/* Rating */}
-          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 shadow-sm">
-            <LuStar className="h-3 w-3 fill-pp-yellow text-pp-yellow" />
-            <span className="text-[11px] font-bold text-slate-800">
-              {rating.toFixed(1)}
-            </span>
-            {reviewsCount > 0 ? (
-              <span className="text-[11px] text-slate-400">({reviewsCount})</span>
-            ) : null}
-          </div>
-
-          {/* Out of stock overlay */}
-          {isOutOfStock ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-[2px]">
-              <span className="rounded-lg bg-slate-800 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white">
-                Out of stock
-              </span>
+        <div className="relative">
+          {/* Tag in the top-left corner */}
+          {product.tags && product.tags.length > 0 && (
+            <div className="absolute top-2 left-2">
+              {product.tags.map((t) => (
+                <span
+                  key={t}
+                  className="text-[11px] inline-flex items-center rounded-full bg-red-500 px-3 py-1 text-white font-semibold shadow-md relative"
+                >
+                  <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white rounded-full border border-red-500"></span>
+                  <span className="ml-3">{t}</span>
+                </span>
+              ))}
             </div>
+          )}
+
+          {/* Product image */}
+          <Link href={`/product/${product.id}`} className="block aspect-[4/3] w-full overflow-hidden rounded-lg bg-pp-surface">
+            <Image
+              src={displayImage}
+              alt={product.name}
+              className="h-full w-full object-cover"
+              width={300}
+              height={225}
+            />
+          </Link>
+        </div>
+
+        {/* Badges row */}
+        <div className="absolute left-2.5 top-2.5 flex flex-col items-start gap-1.5">
+          {discount > 0 ? (
+            <span className="pp-badge-discount">{discount}% off</span>
+          ) : null}
+          {product.brand ? (
+            <span className="pp-badge-brand">{product.brand}</span>
           ) : null}
         </div>
+
+        {/* Rating */}
+        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 shadow-sm">
+          <LuStar className="h-3 w-3 fill-pp-yellow text-pp-yellow" />
+          <span className="text-[11px] font-bold text-slate-800">
+            {rating.toFixed(1)}
+          </span>
+          {reviewsCount > 0 ? (
+            <span className="text-[11px] text-slate-400">({reviewsCount})</span>
+          ) : null}
+        </div>
+
+        {/* Out of stock overlay */}
+        {isOutOfStock ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-[2px]">
+            <span className="rounded-lg bg-slate-800 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white">
+              Out of stock
+            </span>
+          </div>
+        ) : null}
       </Link>
 
       {/* Info area */}

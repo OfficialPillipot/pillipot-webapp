@@ -154,7 +154,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   ), [cart]);
 
   const cartMrpTotal = useMemo(() => cart.reduce(
-    (total, item) => total + (item.originalPrice || item.price) * item.cartQuantity,
+    (total, item) => {
+      const orig = Number(item.originalPrice);
+      const price = Number(item.price);
+      const mrp = orig > price ? orig : price;
+      return total + mrp * item.cartQuantity;
+    },
     0
   ), [cart]);
 

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useCart } from "@/context/CartContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { LuCheck, LuShieldCheck, LuMapPin, LuCreditCard, LuBanknote, LuSmartphone, LuPlus, LuTrash2, LuHouse, LuBriefcase, LuLoaderCircle, LuPencilLine, LuPackage, LuX } from "react-icons/lu";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
@@ -15,8 +16,39 @@ import { swrKeys } from "@/lib/swrKeys";
 
 type Step = "address" | "summary" | "payment";
 
-export default function CheckoutPage() {
-  const { cart, cartTotal, cartMrpTotal, cartCount, clearCart } = useCart();
+function CheckoutContent() {
+  const { cart: globalCart, cartTotal: globalCartTotal, cartMrpTotal: globalCartMrpTotal, cartCount: globalCartCount, clearCart } = useCart();
+  const searchParams = useSearchParams();
+  const cartQuery = searchParams.get("cart");
+
+  const [urlCart, setUrlCart] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    if (cartQuery) {
+      try {
+        setUrlCart(JSON.parse(cartQuery));
+      } catch (e) {
+        console.error("Failed to parse cart query parameter");
+      }
+    }
+  }, [cartQuery]);
+
+  const cart = urlCart || globalCart;
+  const cartTotal = urlCart 
+    ? urlCart.reduce((acc, item) => acc + item.price * item.cartQuantity, 0) 
+    : globalCartTotal;
+  const cartMrpTotal = urlCart
+    ? urlCart.reduce((acc, item) => {
+        const orig = Number(item.originalPrice);
+        const price = Number(item.price);
+        const mrp = orig > price ? orig : price;
+        return acc + mrp * Number(item.cartQuantity);
+      }, 0)
+    : globalCartMrpTotal;
+  const cartCount = urlCart
+    ? urlCart.reduce((acc, item) => acc + item.cartQuantity, 0)
+    : globalCartCount;
+
   const { error } = useToast();
   const { user, token } = useAuth();
   const router = useRouter();
@@ -401,10 +433,7 @@ export default function CheckoutPage() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-pp-surface">
-      <Header />
-
-      <main className="flex-1 pp-container py-6">
+    <main className="flex-1 pp-container py-6">
         <div className="flex items-center justify-center gap-2 mb-8">
           {steps.map((step, i) => (
             <React.Fragment key={step.key}>
@@ -773,10 +802,12 @@ export default function CheckoutPage() {
                   <span>Subtotal ({cartCount} items)</span>
                   <span>{formatPrice(cartMrpTotal)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-700">Discount</span>
-                  <span className="text-pp-success font-semibold">- {formatPrice(cartMrpTotal - cartTotal)}</span>
-                </div>
+                {cartMrpTotal > cartTotal && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-700">Discount</span>
+                    <span className="text-pp-success font-semibold">- {formatPrice(cartMrpTotal - cartTotal)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-700">Delivery</span>
                   <span className="text-pp-success font-semibold">Free</span>
@@ -818,14 +849,25 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="bg-pp-success/10 p-3 text-center border-t border-pp-success/10">
-                <p className="text-pp-success text-[11px] font-bold uppercase tracking-wide">You saved {formatPrice(cartMrpTotal - finalTotal)} on this order!</p>
-              </div>
+              {cartMrpTotal > finalTotal && (
+                <div className="bg-pp-success/10 p-3 text-center border-t border-pp-success/10">
+                  <p className="text-pp-success text-[11px] font-bold uppercase tracking-wide">You saved {formatPrice(cartMrpTotal - finalTotal)} on this order!</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </main>
+  );
+}
 
+export default function CheckoutPage() {
+  return (
+    <div className="flex flex-col min-h-screen bg-pp-surface">
+      <Header />
+      <Suspense fallback={<div className="flex-1 flex items-center justify-center"><LuLoaderCircle className="w-10 h-10 animate-spin text-pp-primary" /></div>}>
+        <CheckoutContent />
+      </Suspense>
       <Footer />
     </div>
   );

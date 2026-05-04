@@ -50,8 +50,16 @@ export default function ProductClient({ product }: { product: Product }) {
       setIsLoginModalOpen(true);
       return;
     }
-    addToCart(product);
-    router.push("/checkout");
+    const singleProduct = [{
+      id: product.id,
+      price: product.price,
+      originalPrice: product.originalPrice || product.price,
+      name: product.name,
+      cartQuantity: 1,
+      imageUrl: product.imageUrl,
+    }];
+    const queryString = `/checkout?cart=${encodeURIComponent(JSON.stringify(singleProduct))}`;
+    router.push(queryString);
   };
 
   const formatPrice = (num: number) =>

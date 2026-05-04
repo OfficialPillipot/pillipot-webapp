@@ -7,12 +7,12 @@ import SearchResultsClient from "./SearchResultsClient";
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; tag?: string }>;
 }) {
-  const { q = "" } = await searchParams;
+  const { q = "", tag } = await searchParams;
   const [categories, products] = await Promise.all([
     getCategories(),
-    getProducts(undefined, q),
+    getProducts(undefined, q, tag),
   ]);
   
   return (

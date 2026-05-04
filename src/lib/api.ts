@@ -72,6 +72,7 @@ export interface Product {
   reviewsCount?: number;
   originalPrice?: number;
   discount?: number;
+  tags?: string[];
 }
 
 export interface ProductOffer {
@@ -110,6 +111,7 @@ export async function getSubcategories(categoryId: string): Promise<Category[]> 
 export async function getProducts(
   categoryId?: string, 
   search?: string, 
+  tag?: string,
   subcategoryId?: string,
   minPrice?: number,
   maxPrice?: number,
@@ -120,6 +122,7 @@ export async function getProducts(
   if (categoryId) params.append("categoryId", categoryId);
   if (subcategoryId) params.append("subcategoryId", subcategoryId);
   if (search) params.append("search", search);
+  if (tag) params.append("tag", tag);
   if (minPrice) params.append("minPrice", minPrice.toString());
   if (maxPrice) params.append("maxPrice", maxPrice.toString());
   if (minRating) params.append("minRating", minRating.toString());
@@ -400,7 +403,7 @@ export type CheckoutCustomerInfo = Partial<CustomerAddress> & {
   paymentMethod?: string;
 };
 
-export async function checkout(cart: CheckoutCartItem[], customerInfo: CheckoutCustomerInfo, appliedOffer?: any): Promise<{
+export async function checkout(cart: CheckoutCartItem[] | CheckoutCartItem, customerInfo: CheckoutCustomerInfo, appliedOffer?: any): Promise<{
   orderId: string;
   paymentMethod: string;
   razorpayOrderId?: string;
@@ -408,23 +411,15 @@ export async function checkout(cart: CheckoutCartItem[], customerInfo: CheckoutC
   razorpayKeyId?: string;
   currency?: string;
 }> {
+  const cartItems = Array.isArray(cart) ? cart : [cart];
   const res = await fetch(`${API_URL}/orders/checkout`, {
     method: "POST",
     cache: "no-store",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ cart, customerInfo, appliedOffer }),
+    body: JSON.stringify({ cart: cartItems, customerInfo, appliedOffer }),
   });
   if (!res.ok) {
-    let msg = "Something went wrong. Please try again.";
-    try {
-      const data = (await res.json()) as ApiErrorShape;
-      if (data.message) {
-        msg = Array.isArray(data.message) ? data.message[0] : data.message;
-      } else if (data.error) {
-        msg = data.error;
-      }
-    } catch {}
-    throw new Error(msg);
+    throw new Error("Failed to checkout");
   }
   return res.json();
 }

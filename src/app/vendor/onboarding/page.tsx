@@ -104,19 +104,19 @@ export default function VendorOnboardingPage() {
             <div className="rounded-[1.75rem] border border-pp-line bg-white p-8 shadow-sm">
               <h2 className="text-2xl font-black text-slate-950 mb-6">Why sell on Pillipot?</h2>
               <div className="grid gap-5 sm:grid-cols-2">
-                <div className="rounded-3xl bg-pp-surface p-6 shadow-sm">
+                <div className="rounded-3xl bg-pp-surface p-6 shadow-sm hover:bg-pp-surface/80">
                   <h3 className="font-semibold text-slate-900">Trusted customers</h3>
                   <p className="mt-3 text-sm leading-6 text-slate-600">Access a growing audience with secure checkout and fast delivery options.</p>
                 </div>
-                <div className="rounded-3xl bg-pp-surface p-6 shadow-sm">
+                <div className="rounded-3xl bg-pp-surface p-6 shadow-sm hover:bg-pp-surface/80">
                   <h3 className="font-semibold text-slate-900">Easy onboarding</h3>
                   <p className="mt-3 text-sm leading-6 text-slate-600">Complete verification in 4 simple steps and get approved within 24 hours.</p>
                 </div>
-                <div className="rounded-3xl bg-pp-surface p-6 shadow-sm">
+                <div className="rounded-3xl bg-pp-surface p-6 shadow-sm hover:bg-pp-surface/80">
                   <h3 className="font-semibold text-slate-900">Order management</h3>
                   <p className="mt-3 text-sm leading-6 text-slate-600">Track sales, manage inventory, and view order status from one place.</p>
                 </div>
-                <div className="rounded-3xl bg-pp-surface p-6 shadow-sm">
+                <div className="rounded-3xl bg-pp-surface p-6 shadow-sm hover:bg-pp-surface/80">
                   <h3 className="font-semibold text-slate-900">Support & growth</h3>
                   <p className="mt-3 text-sm leading-6 text-slate-600">Get personal assistance from our vendor success team and grow with Pillipot.</p>
                 </div>
