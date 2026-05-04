@@ -93,14 +93,14 @@ export default function Footer() {
             {/* Contact */}
             <div className="mt-5 space-y-2.5">
               <a
-                href="mailto:support@pillipot.com"
+                href="mailto: support.pillipot@gmail.com"
                 className="flex items-center gap-2.5 text-[0.8rem] text-white/55 transition-colors hover:text-white"
               >
                 <LuMail className="h-3.5 w-3.5 text-white/30" />
-                support@pillipot.com
+                support.pillipot@gmail.com
               </a>
               <a
-                href="tel:+911234567890"
+                href="9024063005"
                 className="flex items-center gap-2.5 text-[0.8rem] text-white/55 transition-colors hover:text-white"
               >
                 <LuPhone className="h-3.5 w-3.5 text-white/30" />

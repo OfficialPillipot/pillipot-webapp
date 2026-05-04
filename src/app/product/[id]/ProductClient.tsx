@@ -23,6 +23,7 @@ export default function ProductClient({ product }: { product: Product }) {
   const { success } = useToast();
 
   const [deliveryDateStr, setDeliveryDateStr] = useState("");
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -280,7 +281,21 @@ export default function ProductClient({ product }: { product: Product }) {
 
                 <div className="rounded-[1.8rem] border border-white/60 bg-white/86 p-5 pp-shadow">
                   <h3 className="mb-3 text-base font-black text-slate-950">Product Description</h3>
-                  <p className="text-sm leading-7 text-slate-600">{product.description}</p>
+                  <div className="text-sm leading-7 text-slate-600">
+                    {product.description && product.description.length > 150 ? (
+                      <>
+                        {isDescExpanded ? product.description : `${product.description.slice(0, 150)}...`}
+                        <button 
+                          onClick={() => setIsDescExpanded(!isDescExpanded)} 
+                          className="ml-2 font-bold text-pp-primary hover:underline focus:outline-none"
+                        >
+                          {isDescExpanded ? "See Less" : "See More"}
+                        </button>
+                      </>
+                    ) : (
+                      product.description
+                    )}
+                  </div>
                 </div>
 
                 {product.videoUrl && (
