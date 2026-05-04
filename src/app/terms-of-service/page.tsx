@@ -10,13 +10,13 @@ export default function TermsOfService() {
   return (
     <div className="flex flex-col min-h-screen bg-pp-surface">
       <Header />
-      
+
       <main className="flex-1">
         <section className="pp-container py-8 md:py-12">
           <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 md:p-10 pp-shadow border border-pp-line">
             <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-2">Terms of Service</h1>
             <p className="text-slate-500 mb-8 font-medium">Last updated: {new Date().toLocaleDateString()}</p>
-            
+
             <div className="space-y-8 text-slate-600 leading-relaxed">
               <section>
                 <h2 className="text-xl font-bold text-slate-800 mb-3">1. Agreement to Terms</h2>
@@ -76,7 +76,7 @@ export default function TermsOfService() {
                 <p>
                   In order to resolve a complaint regarding the Site or to receive further information regarding use of the Site, please contact us at:
                   <br />
-                  <span className="font-medium text-pp-primary mt-1 inline-block">support@pillipot.com</span>
+                  <span className="font-medium text-pp-primary mt-1 inline-block">support.pillipot@gmail.com</span>
                 </p>
               </section>
             </div>

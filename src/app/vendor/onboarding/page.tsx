@@ -30,7 +30,7 @@ export default function VendorOnboardingPage() {
 
                 <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
                   <a
-                    href="mailto:support@pillipot.com"
+                    href="mailto:support.pillipot@gmail.com"
                     className="inline-flex items-center justify-center rounded-full bg-pp-primary px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-sky-300"
                   >
                     Contact Vendor Support

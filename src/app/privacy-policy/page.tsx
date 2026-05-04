@@ -10,19 +10,19 @@ export default function PrivacyPolicy() {
   return (
     <div className="flex flex-col min-h-screen bg-pp-surface">
       <Header />
-      
+
       <main className="flex-1">
         <section className="pp-container py-8 md:py-12">
           <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 md:p-10 pp-shadow border border-pp-line">
             <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-2">Privacy Policy</h1>
             <p className="text-slate-500 mb-8 font-medium">Last updated: {new Date().toLocaleDateString()}</p>
-            
+
             <div className="space-y-8 text-slate-600 leading-relaxed">
               <section>
                 <h2 className="text-xl font-bold text-slate-800 mb-3">1. Introduction</h2>
                 <p>
-                  Welcome to Pillipot. We respect your privacy and are committed to protecting your personal data. 
-                  This privacy policy will inform you as to how we look after your personal data when you visit our website 
+                  Welcome to Pillipot. We respect your privacy and are committed to protecting your personal data.
+                  This privacy policy will inform you as to how we look after your personal data when you visit our website
                   and tell you about your privacy rights and how the law protects you.
                 </p>
               </section>
@@ -55,7 +55,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2 className="text-xl font-bold text-slate-800 mb-3">4. Data Security</h2>
                 <p>
-                  We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorised way, altered or disclosed. 
+                  We have put in place appropriate security measures to prevent your personal data from being accidentally lost, used or accessed in an unauthorised way, altered or disclosed.
                   In addition, we limit access to your personal data to those employees, agents, contractors and other third parties who have a business need to know.
                 </p>
               </section>
@@ -65,7 +65,7 @@ export default function PrivacyPolicy() {
                 <p>
                   If you have any questions about this privacy policy or our privacy practices, please contact us at:
                   <br />
-                  <span className="font-medium text-pp-primary mt-1 inline-block">support@pillipot.com</span>
+                  <span className="font-medium text-pp-primary mt-1 inline-block">support.pillipot@gmail.com</span>
                 </p>
               </section>
             </div>

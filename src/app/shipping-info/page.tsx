@@ -10,18 +10,18 @@ export default function ShippingInfo() {
   return (
     <div className="flex flex-col min-h-screen bg-pp-surface">
       <Header />
-      
+
       <main className="flex-1">
         <section className="pp-container py-8 md:py-12">
           <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 md:p-10 pp-shadow border border-pp-line">
             <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-2">Shipping Information</h1>
             <p className="text-slate-500 mb-8 font-medium">Last updated: {new Date().toLocaleDateString()}</p>
-            
+
             <div className="space-y-8 text-slate-600 leading-relaxed">
               <section>
                 <h2 className="text-xl font-bold text-slate-800 mb-3">1. Order Processing Time</h2>
                 <p>
-                  All orders are processed within 1 to 3 business days (excluding weekends and holidays) after receiving your order confirmation email. 
+                  All orders are processed within 1 to 3 business days (excluding weekends and holidays) after receiving your order confirmation email.
                   You will receive another notification when your order has shipped.
                 </p>
                 <p className="mt-2 text-sm text-slate-500 italic">
@@ -49,16 +49,16 @@ export default function ShippingInfo() {
                         <td className="px-4 py-3">3 to 5 business days</td>
                         <td className="px-4 py-3">Free on eligible orders</td>
                       </tr>
-                      <tr>
+                      {/* <tr>
                         <td className="px-4 py-3">Expedited Shipping</td>
                         <td className="px-4 py-3">1 to 2 business days</td>
                         <td className="px-4 py-3">$15.00</td>
-                      </tr>
-                      <tr>
+                      </tr> */}
+                      {/* <tr>
                         <td className="px-4 py-3">Next Day Delivery</td>
                         <td className="px-4 py-3">Next business day</td>
                         <td className="px-4 py-3">$25.00</td>
-                      </tr>
+                      </tr> */}
                     </tbody>
                   </table>
                 </div>
@@ -70,7 +70,7 @@ export default function ShippingInfo() {
                   We currently offer international shipping to select countries. Shipping charges for your order will be calculated and displayed at checkout.
                 </p>
                 <p className="mt-2">
-                  Your order may be subject to import duties and taxes (including VAT), which are incurred once a shipment reaches your destination country. 
+                  Your order may be subject to import duties and taxes (including VAT), which are incurred once a shipment reaches your destination country.
                   Pillipot is not responsible for these charges if they are applied and are your responsibility as the customer.
                 </p>
               </section>
@@ -78,11 +78,11 @@ export default function ShippingInfo() {
               <section>
                 <h2 className="text-xl font-bold text-slate-800 mb-3">4. How Do I Check the Status of My Order?</h2>
                 <p>
-                  When your order has shipped, you will receive an email notification from us which will include a tracking number you can use to check its status. 
+                  When your order has shipped, you will receive an email notification from us which will include a tracking number you can use to check its status.
                   Please allow 48 hours for the tracking information to become available.
                 </p>
                 <p className="mt-2">
-                  If you haven't received your order within 7 days of receiving your shipping confirmation email, please contact us at support@pillipot.com with your name and order number, and we will look into it for you.
+                  If you haven't received your order within 7 days of receiving your shipping confirmation email, please contact us at support.pillipot@gmail.com with your name and order number, and we will look into it for you.
                 </p>
               </section>
 
@@ -96,7 +96,7 @@ export default function ShippingInfo() {
               <section>
                 <h2 className="text-xl font-bold text-slate-800 mb-3">6. Refunds, Returns, and Exchanges</h2>
                 <p>
-                  We accept returns up to 14 days after delivery, if the item is unused and in its original condition, and we will refund the full order amount minus the shipping costs for the return.
+                  We accept returns up to 3 days after delivery, if the item is unused and in its original condition, and we will refund the full order amount minus the shipping costs for the return.
                 </p>
                 <p className="mt-2">
                   For full details, please view our <a href="/return-and-refund" className="text-pp-primary hover:underline font-medium">Return & Refund Policy</a>.
