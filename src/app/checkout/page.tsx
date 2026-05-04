@@ -702,7 +702,7 @@ function CheckoutContent() {
                       onClick={() => { setActiveStep("payment"); window.scrollTo(0, 0); }}
                       className="flex-1 sm:flex-none pp-gradient text-white px-2 py-4 rounded-2xl font-black shadow-xl hover:shadow-pp-primary/20 hover:-translate-y-0.5 transition-all text-sm uppercase tracking-widest whitespace-nowrap"
                     >
-                      Proceed to Payment
+                      Proceed Payment
                     </button>
                   </div>
                 </div>
