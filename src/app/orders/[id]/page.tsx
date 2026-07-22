@@ -26,6 +26,7 @@ import {
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
 import ReviewModal from "@/components/product/ReviewModal";
+import OrderItemImage from "@/components/orders/OrderItemImage";
 
 export default function OrderDetailsPage() {
   const { id } = useParams();
@@ -195,9 +196,12 @@ export default function OrderDetailsPage() {
               <div className="divide-y divide-gray-50">
                 {order.items.map((item: any, idx: number) => (
                   <div key={idx} className="p-4 sm:p-8 flex gap-4 sm:gap-6 items-start flex-wrap sm:flex-nowrap">
-                    <div className="w-16 h-16 sm:w-24 sm:h-24 bg-pp-surface rounded-2xl flex items-center justify-center shrink-0 border border-gray-50">
-                      <LuPackage className="w-8 h-8 sm:w-10 sm:h-10 text-gray-300" />
-                    </div>
+                    <OrderItemImage
+                      item={item}
+                      className="w-16 h-16 sm:w-24 sm:h-24 bg-pp-surface rounded-2xl flex items-center justify-center shrink-0 border border-gray-50 overflow-hidden"
+                      imgClassName="h-full w-full object-cover"
+                      iconClassName="w-8 h-8 sm:w-10 sm:h-10 text-gray-300"
+                    />
                     <div className="flex-1 min-w-0">
                       <h3 className="text-base sm:text-lg font-black text-gray-900 mb-1 hover:text-pp-primary cursor-pointer transition-colors" onClick={() => router.push(`/product/${item.productId}`)}>{item.productName}</h3>
                       <div className="flex flex-wrap gap-2 sm:gap-4 text-sm font-bold text-gray-400">
