@@ -9,6 +9,8 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
 import { getProducts, Product } from "@/lib/api";
 
+import Logo from "@/components/common/Logo";
+
 const mobileNav = [
   { label: "Home", href: "/", icon: LuHouse },
   { label: "My Orders", href: "/orders", icon: LuPackage },
@@ -102,28 +104,8 @@ function HeaderContent() {
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button> */}
 
-          <Link href="/" className="group flex min-w-0 items-center gap-2.5">
-            {/* <div className="flex h-8 w-8 items-center justify-center rounded-2xl border border-white/25 bg-white/90 shadow-[0_20px_50px_rgba(10,25,60,0.22)] transition-transform duration-300 group-hover:-translate-y-0.5 min-[360px]:h-9 min-[360px]:w-9">
-              <span className="bg-linear-to-br from-pp-accent via-pp-primary to-pp-success bg-clip-text text-base font-black text-transparent min-[360px]:text-lg">
-                P
-              </span>
-            </div>
-            <div className="min-w-0 leading-none text-white">
-              <div className="flex items-center">
-                <span className="flex items-center text-[0.92rem] font-black tracking-[-0.04em] min-[360px]:text-base md:text-[1.15rem]">
-                  <span className="text-pp-accent">p</span>
-                  <span className="text-pp-cyan">i</span>
-                  <span className="text-pp-cyan">l</span>
-                  <span className="text-pp-primary">l</span>
-                  <span className="text-pp-primary">i</span>
-                  <span className="text-pp-accent-warm">p</span>
-                  <span className="text-pp-success">o</span>
-                  <span className="text-pp-accent">t</span>
-                </span>
-              </div>
-            </div> */}
-
-            <img className="h-12" src="/logopilli.png" alt="" />
+          <Link href="/" className="group flex min-w-0 items-center">
+            <Logo variant="dark" />
           </Link>
 
           <div className="ml-auto hidden items-center gap-3 md:flex" ref={searchRef}>

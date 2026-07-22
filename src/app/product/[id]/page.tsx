@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   if (!product) return { title: "Product Not Found" };
 
   return {
-    title: `${product.name} | Pillipot Marketplace`,
+    title: `${product.name} | Pillipot`,
     description: product.description?.slice(0, 160),
     openGraph: {
       title: product.name,

@@ -18,7 +18,14 @@ export default function HomeLoading() {
         </div>
       </div>
 
-      <main className="flex-1 pp-container px-4 py-8">
+      <main className="flex-1 pp-container px-4 py-6">
+        {/* Loading Tagline */}
+        <div className="mb-6 text-center">
+          <p className="text-sm sm:text-base font-bold text-pp-primary animate-pulse tracking-tight">
+            Your Next Favorite Thing Is Just a Moment Away...
+          </p>
+        </div>
+
         {/* Banner Skeleton */}
         <div className="w-full h-[200px] md:h-[280px] bg-gray-200 animate-pulse rounded-3xl mb-12" />
         
