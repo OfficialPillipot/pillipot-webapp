@@ -90,10 +90,23 @@ export default function MyOrdersPage() {
     if (!token) router.push("/");
   }, [loading, router, token]);
 
+  // ── Filter out unpaid online orders ────────────────────────
+  const completedOrders = useMemo(() => {
+    return (orders as Order[]).filter(o => {
+      const method = (o.paymentMethod || "").toLowerCase();
+      const status = (o.paymentStatus || "").toLowerCase();
+      const isOnline = method === "razorpay" || method === "online" || (method !== "" && method !== "cod" && method !== "cash_on_delivery");
+      if (isOnline) {
+        return status === "paid";
+      }
+      return status !== "failed";
+    });
+  }, [orders]);
+
   // ── Filtering ──────────────────────────────────────────────────────────────
   const filteredOrders = useMemo(() => {
     const tab = TABS.find(t => t.key === activeTab)!;
-    let list: Order[] = orders;
+    let list: Order[] = completedOrders;
 
     // Filter by tab statuses (empty means "all")
     if (tab.statuses.length > 0) {
@@ -113,7 +126,7 @@ export default function MyOrdersPage() {
     }
 
     return list;
-  }, [orders, activeTab, searchQuery]);
+  }, [completedOrders, activeTab, searchQuery]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleCancelClick = (orderId: string) => {
@@ -177,7 +190,7 @@ export default function MyOrdersPage() {
     const counts: Record<TabKey, number> = { all: 0, not_shipped: 0, delivered: 0, cancelled: 0, buy_again: 0 };
     const q = searchQuery.trim().toLowerCase();
     for (const tab of TABS) {
-      let list = orders as Order[];
+      let list = completedOrders;
       if (tab.statuses.length > 0) {
         list = list.filter(o => tab.statuses.includes(o.status.toLowerCase() as never));
       }
@@ -191,7 +204,7 @@ export default function MyOrdersPage() {
       counts[tab.key] = list.length;
     }
     return counts;
-  }, [orders, searchQuery]);
+  }, [completedOrders, searchQuery]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (

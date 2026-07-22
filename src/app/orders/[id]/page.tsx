@@ -56,7 +56,17 @@ export default function OrderDetailsPage() {
     );
   }
 
-  if (!order) {
+  const isOnlinePayment = order && (
+    (order.paymentMethod || "").toLowerCase() === "razorpay" ||
+    (order.paymentMethod || "").toLowerCase() === "online" ||
+    (order.orderType || "").toLowerCase() === "razorpay" ||
+    (order.orderType || "").toLowerCase() === "online" ||
+    ((order.paymentMethod || "") !== "" && (order.paymentMethod || "").toLowerCase() !== "cod" && (order.paymentMethod || "").toLowerCase() !== "cash_on_delivery")
+  );
+
+  const isUnpaidOnlineOrder = isOnlinePayment && (order.paymentStatus || "").toLowerCase() !== "paid";
+
+  if (!order || isUnpaidOnlineOrder) {
     return (
       <div className="flex flex-col min-h-screen bg-pp-surface">
         <Header />

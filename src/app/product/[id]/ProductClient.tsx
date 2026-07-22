@@ -14,6 +14,7 @@ import { useToast } from "@/context/ToastContext";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
 import { getProductOffers, getProductReviews } from "@/lib/api";
+import { cleanQuillHtml } from "@/lib/htmlUtils";
 
 export default function ProductClient({ product }: { product: Product }) {
   const router = useRouter();
@@ -26,6 +27,10 @@ export default function ProductClient({ product }: { product: Product }) {
 
   const [deliveryDateStr, setDeliveryDateStr] = useState("");
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [canExpandDesc, setCanExpandDesc] = useState(false);
+  const descRef = useRef<HTMLDivElement>(null);
+
+  const cleanedDescription = cleanQuillHtml(product.description);
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
@@ -33,6 +38,14 @@ export default function ProductClient({ product }: { product: Product }) {
     date.setDate(date.getDate() + 5);
     setDeliveryDateStr(date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
   }, [product.id]);
+
+  useLayoutEffect(() => {
+    if (descRef.current) {
+      // Compare scrollHeight against clientHeight when collapsed to determine if content overflows
+      const overflow = descRef.current.scrollHeight > descRef.current.clientHeight + 4;
+      setCanExpandDesc(overflow);
+    }
+  }, [cleanedDescription]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
@@ -308,17 +321,23 @@ export default function ProductClient({ product }: { product: Product }) {
             <div className="lg:col-span-7 bg-white rounded-[2rem] border border-slate-100 p-6 sm:p-8 shadow-sm">
               <h3 className="text-xl font-black text-slate-950 mb-4">Product Description</h3>
               <div className="text-sm leading-6 text-slate-600">
-                {product.description ? (
+                {cleanedDescription ? (
                   <>
-                    <p className={isDescExpanded ? "" : "line-clamp-3"}>
-                      {product.description}
-                    </p>
-                    <button
-                      onClick={() => setIsDescExpanded(!isDescExpanded)}
-                      className="mt-2 font-bold text-pp-primary hover:underline focus:outline-none text-xs"
-                    >
-                      {isDescExpanded ? "See Less" : "See More"}
-                    </button>
+                    <div
+                      ref={descRef}
+                      className={`product-description-content ${
+                        isDescExpanded ? "" : "max-h-[9rem] overflow-hidden relative"
+                      }`}
+                      dangerouslySetInnerHTML={{ __html: cleanedDescription }}
+                    />
+                    {canExpandDesc && (
+                      <button
+                        onClick={() => setIsDescExpanded(!isDescExpanded)}
+                        className="mt-3 font-bold text-pp-primary hover:underline focus:outline-none text-xs flex items-center gap-1"
+                      >
+                        {isDescExpanded ? "See Less" : "See More"}
+                      </button>
+                    )}
                   </>
                 ) : (
                   <p className="text-slate-400 italic">No description available.</p>
