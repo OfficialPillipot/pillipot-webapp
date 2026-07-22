@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="pillipotGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2172FF" />
+      <stop offset="100%" stop-color="#0046B8" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22B1C3" />
+      <stop offset="100%" stop-color="#2172FF" />
+    </linearGradient>
+  </defs>
+  <!-- Background rounded box -->
+  <rect width="512" height="512" rx="128" fill="url(#pillipotGrad)" />
+  <!-- Subtle inner border highlight -->
+  <rect x="12" y="12" width="488" height="488" rx="116" fill="none" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="12" />
+  <!-- Bold "P" logo path -->
+  <path d="M 144 100 H 280 C 352 100 396 140 396 216 C 396 292 352 332 280 332 H 224 V 412 C 224 423 215 432 204 432 H 164 C 153 432 144 423 144 412 V 100 Z M 224 168 V 264 H 272 C 304 264 324 248 324 216 C 324 184 304 168 272 168 Z" fill="#FFFFFF" />
+  <!-- Accent dot -->
+  <circle cx="396" cy="396" r="32" fill="url(#accentGrad)" stroke="#FFFFFF" stroke-width="8" />
+</svg>

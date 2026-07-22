@@ -25,14 +25,15 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "Pillipot — Your Marketplace",
-  description: "Shop the best products at unbeatable prices. Electronics, fashion, home & more with free delivery.",
+  title: "Pillipot — Your Next Favorite Thing Is Just a Moment Away...",
+  description: "Your Next Favorite Thing Is Just a Moment Away... Shop the best products at unbeatable prices.",
   icons: {
     icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon.png", type: "image/png" },
     ],
-    apple: "/favicon.png",
-    shortcut: "/favicon.png",
+    apple: "/favicon.svg",
+    shortcut: "/favicon.svg",
   },
 };
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@/components/common/Logo";
 import {
   LuGlobe,
   LuInstagram,
@@ -75,23 +76,16 @@ export default function Footer() {
         </div>
 
         {/* Main footer grid */}
-        <div className="grid gap-8 border-b border-white/8 py-8 md:grid-cols-[1.6fr_repeat(3,1fr)] md:py-10">
+        <div className="grid gap-6 border-b border-white/8 py-6 md:gap-8 md:grid-cols-[1.6fr_repeat(3,1fr)] md:py-10">
 
           {/* Brand column */}
           <div>
-            <div className="flex items-center gap-2.5">
-              <img className="h-12" src="/logopilli.png" alt="" />
-
-
-            </div>
-
-            {/* <p className="mt-4 max-w-[240px] text-[0.82rem] leading-[1.7] text-white/48">
-              Your trusted online marketplace — curated products, fast delivery,
-              and a seamless shopping experience.
-            </p> */}
+            <Link href="/" className="inline-block">
+              <Logo variant="dark" />
+            </Link>
 
             {/* Contact */}
-            <div className="mt-5 space-y-2.5">
+            <div className="mt-4 space-y-2 md:mt-5 md:space-y-2.5">
               <a
                 href="mailto: support.pillipot@gmail.com"
                 className="flex items-center gap-2.5 text-[0.8rem] text-white/55 transition-colors hover:text-white"
@@ -108,52 +102,56 @@ export default function Footer() {
               </a>
             </div>
 
-            {/* Socials */}
-            <div className="mt-5 flex gap-2">
-              {socialLinks.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  aria-label={s.label}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/6 text-white/55 transition-all duration-200 hover:border-white/20 hover:bg-white/12 hover:text-white"
-                >
-                  <s.icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
+            {/* Socials & Become Vendor button */}
+            <div className="mt-4 flex flex-wrap items-center gap-3 md:mt-5 md:flex-col md:items-start">
+              <div className="flex gap-2">
+                {socialLinks.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    aria-label={s.label}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/6 text-white/55 transition-all duration-200 hover:border-white/20 hover:bg-white/12 hover:text-white"
+                  >
+                    <s.icon className="h-4 w-4" />
+                  </a>
+                ))}
+              </div>
 
-            <div className="mt-6">
-              <Link
-                href="/vendor/onboarding"
-                className="inline-flex items-center justify-center rounded-full bg-pp-primary px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-sky-300"
-              >
-                Become a Vendor
-              </Link>
+              <div className="mt-1 md:mt-4">
+                <Link
+                  href="/vendor/onboarding"
+                  className="inline-flex items-center justify-center rounded-full bg-pp-primary px-4 py-2 text-xs font-semibold text-slate-950 transition hover:bg-sky-300 md:px-5 md:py-3 md:text-sm"
+                >
+                  Become a Vendor
+                </Link>
+              </div>
             </div>
           </div>
 
-          {/* Link columns */}
-          {footerLinks.map((section) => (
-            <div key={section.title}>
-              <h3 className="mb-4 text-[0.68rem] font-black uppercase tracking-[0.22em] text-white/35">
-                {section.title}
-              </h3>
-              <ul className="space-y-2.5">
-                {section.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-[0.82rem] text-white/55 transition-colors duration-150 hover:text-white"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Link columns arranged side-by-side in 2-3 columns on mobile */}
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:contents">
+            {footerLinks.map((section) => (
+              <div key={section.title}>
+                <h3 className="mb-3 text-[0.68rem] font-black uppercase tracking-[0.22em] text-white/35 md:mb-4">
+                  {section.title}
+                </h3>
+                <ul className="space-y-2 md:space-y-2.5">
+                  {section.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-[0.82rem] text-white/55 transition-colors duration-150 hover:text-white"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Bottom bar */}

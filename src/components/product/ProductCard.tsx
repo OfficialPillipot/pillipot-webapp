@@ -98,7 +98,8 @@ export default function ProductCard({ product }: ProductCardProps) {
 
 
 
-        {/* Rating */}
+        {/* Rating commented out to hide rating star from product image */}
+        {/* 
         <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 shadow-sm">
           <LuStar className="h-3 w-3 fill-pp-yellow text-pp-yellow" />
           <span className="text-[11px] font-bold text-slate-800">
@@ -108,6 +109,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="text-[11px] text-slate-400">({reviewsCount})</span>
           ) : null}
         </div>
+        */}
 
         {/* Out of stock overlay */}
         {isOutOfStock ? (
