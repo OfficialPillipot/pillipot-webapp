@@ -92,8 +92,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("pillipot_token");
     // Remove cookie
     document.cookie = "pillipot_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    router.push("/login");
-    router.refresh(); // Ensure state is cleared globally
+    setTimeout(() => {
+      router.push("/login");
+      router.refresh();
+    }, 0);
   }, [router]);
 
   const closeWelcomePopup = useCallback(() => {

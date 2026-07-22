@@ -87,7 +87,12 @@ export default function MyOrdersPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!token) router.push("/");
+    if (!token) {
+      const timer = setTimeout(() => {
+        router.push("/");
+      }, 0);
+      return () => clearTimeout(timer);
+    }
   }, [loading, router, token]);
 
   // ── Filter out unpaid online orders ────────────────────────

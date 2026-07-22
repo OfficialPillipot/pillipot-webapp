@@ -23,7 +23,10 @@ export default function AccountPage() {
   useEffect(() => {
     if (loading) return;
     if (!token) {
-      router.push("/login");
+      const timer = setTimeout(() => {
+        router.push("/login");
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [loading, token, router]);
 
