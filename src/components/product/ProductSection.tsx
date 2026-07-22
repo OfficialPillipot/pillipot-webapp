@@ -31,11 +31,22 @@ export default function ProductSection({ title, products, viewAllLink = "#" }: P
         </Link>
       </div>
 
-      {/* Product grid */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-3.5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 xl:gap-4">
-        {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
+      {/* Product grid: 3 on mobile, 4 on tablet, 5 on desktop — strictly 1 single row on every device */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3.5 sm:grid-cols-4 lg:grid-cols-5 xl:gap-4">
+        {products.map((p, idx) => {
+          const visibilityClass =
+            idx < 3
+              ? "block"
+              : idx === 3
+              ? "hidden sm:block"
+              : "hidden lg:block";
+
+          return (
+            <div key={p.id} className={visibilityClass}>
+              <ProductCard product={p} />
+            </div>
+          );
+        })}
       </div>
     </section>
   );

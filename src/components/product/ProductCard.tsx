@@ -35,7 +35,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <div
-      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/55 bg-white pp-shadow transition-all duration-300 ${isOutOfStock
+      className={`group relative flex h-full flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-white/55 bg-white pp-shadow transition-all duration-300 ${isOutOfStock
         ? "opacity-70 grayscale-[0.06]"
         : "hover:-translate-y-1 hover:border-pp-cyan/30 hover:pp-shadow-hover"
         }`}
@@ -46,13 +46,13 @@ export default function ProductCard({ product }: ProductCardProps) {
           e.preventDefault();
           toggleWishlist(product);
         }}
-        className={`absolute right-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-full border bg-white shadow-sm transition-all duration-200 ${wishlisted
+        className={`absolute right-1.5 top-1.5 sm:right-3 sm:top-3 z-20 flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full border bg-white/90 shadow-sm transition-all duration-200 ${wishlisted
           ? "border-red-100 bg-red-50 text-pp-accent"
           : "border-slate-200 text-slate-300 hover:border-red-100 hover:bg-red-50 hover:text-pp-accent"
           }`}
         aria-label="Toggle wishlist"
       >
-        <LuHeart className={`h-4 w-4 ${wishlisted ? "fill-current" : ""}`} />
+        <LuHeart className={`h-3 w-3 sm:h-4 sm:w-4 ${wishlisted ? "fill-current" : ""}`} />
       </button>
 
       {/* Image area */}
@@ -62,30 +62,28 @@ export default function ProductCard({ product }: ProductCardProps) {
       >
         <div className="relative">
           {/* Combined Badge Column (Tags + Discount) */}
-          <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1.5">
+          <div className="absolute left-1.5 top-1.5 sm:left-2 sm:top-2 z-10 flex flex-col items-start gap-1">
             {product.tags && product.tags.length > 0 && (
               <div className="flex flex-col gap-1">
                 {product.tags.map((t) => (
                   <span
                     key={t}
-                    className="text-[10px] inline-flex items-center rounded-full bg-red-500 px-2.5 py-1 text-white font-black uppercase tracking-wider shadow-md relative"
+                    className="text-[8px] sm:text-[10px] inline-flex items-center rounded-full bg-red-500 px-1.5 sm:px-2.5 py-0.5 sm:py-1 text-white font-black uppercase tracking-wider shadow-md relative"
                   >
-                    <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full border border-red-500"></span>
-                    <span className="ml-2.5">{t}</span>
+                    <span className="absolute left-0 top-1/2 transform -translate-y-1/2 w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full border border-red-500"></span>
+                    <span className="ml-1.5 sm:ml-2.5">{t}</span>
                   </span>
                 ))}
               </div>
             )}
 
-
-
             {product.brand ? (
-              <span className="pp-badge-brand text-[9px] font-bold shadow-sm">{product.brand}</span>
+              <span className="pp-badge-brand text-[8px] sm:text-[9px] font-bold shadow-sm">{product.brand}</span>
             ) : null}
           </div>
 
           {/* Product image */}
-          <div className="block aspect-[4/3] w-full overflow-hidden rounded-lg bg-pp-surface">
+          <div className="block aspect-[4/3] w-full overflow-hidden rounded-t-xl sm:rounded-t-2xl bg-pp-surface">
             <Image
               src={displayImage}
               alt={product.name}
@@ -96,25 +94,10 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         </div>
 
-
-
-        {/* Rating commented out to hide rating star from product image */}
-        {/* 
-        <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1 rounded-md bg-white/95 px-2 py-1 shadow-sm">
-          <LuStar className="h-3 w-3 fill-pp-yellow text-pp-yellow" />
-          <span className="text-[11px] font-bold text-slate-800">
-            {rating.toFixed(1)}
-          </span>
-          {reviewsCount > 0 ? (
-            <span className="text-[11px] text-slate-400">({reviewsCount})</span>
-          ) : null}
-        </div>
-        */}
-
         {/* Out of stock overlay */}
         {isOutOfStock ? (
           <div className="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-[2px]">
-            <span className="rounded-lg bg-slate-800 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-white">
+            <span className="rounded-lg bg-slate-800 px-2 py-1 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.18em] text-white">
               Out of stock
             </span>
           </div>
@@ -124,37 +107,36 @@ export default function ProductCard({ product }: ProductCardProps) {
       {/* Info area */}
       <Link
         href={`/product/${product.id}`}
-        className="flex flex-1 flex-col gap-2 p-3"
+        className="flex flex-1 flex-col gap-1.5 p-2 sm:p-3"
       >
         {/* Product name */}
-        <h3 className="flex items-center flex-wrap gap-2 text-[0.88rem] font-semibold leading-[1.45] text-slate-800 group-hover:text-pp-primary">
+        <h3 className="flex items-center flex-wrap gap-1 text-[0.75rem] sm:text-[0.88rem] font-bold leading-tight text-slate-800 group-hover:text-pp-primary">
           <span className="line-clamp-1">{product.name}</span>
           {hasDiscount && (
-            <span className="pp-badge-discount px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider shadow-sm">
+            <span className="pp-badge-discount px-1 py-0.5 text-[8px] sm:text-[9px] font-black uppercase tracking-wider shadow-sm">
               {discount}% off
             </span>
           )}
         </h3>
 
         {/* Price row */}
-        <div className="mt-auto flex flex-col gap-1 pt-2">
+        <div className="mt-auto flex flex-col gap-0.5 pt-1">
           {hasDiscount && (
-            <div className="flex items-center gap-1.5 opacity-80">
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Actual Price:</span>
-              <span className="text-[11px] text-slate-400 line-through decoration-pp-accent/30">{formatPrice(originalPrice)}</span>
+            <div className="flex items-center gap-1 opacity-80">
+              <span className="text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-wider">Actual Price:</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-400 line-through decoration-pp-accent/30">{formatPrice(originalPrice)}</span>
             </div>
           )}
-          <div className="flex items-baseline gap-2">
-            {hasDiscount && <span className="text-[9px] font-black text-pp-primary uppercase tracking-wider">Our Price:</span>}
-            <span className="pp-price-main">{formatPrice(product.price)}</span>
-
+          <div className="flex items-baseline gap-1">
+            {hasDiscount && <span className="text-[8px] sm:text-[9px] font-black text-pp-primary uppercase tracking-wider">Our Price:</span>}
+            <span className="text-sm sm:text-base font-black text-slate-900">{formatPrice(product.price)}</span>
           </div>
         </div>
 
         {/* CTA hint */}
-        <div className="mt-1 flex items-center gap-1.5 rounded-lg border border-pp-cyan/20 bg-pp-surface-alt px-3 py-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-          <LuShoppingCart className="h-3.5 w-3.5 text-pp-primary" />
-          <span className="text-[11px] font-bold text-pp-primary">View product</span>
+        <div className="mt-1 hidden sm:flex items-center gap-1.5 rounded-lg border border-pp-cyan/20 bg-pp-surface-alt px-2.5 py-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+          <LuShoppingCart className="h-3 w-3 text-pp-primary" />
+          <span className="text-[10px] font-bold text-pp-primary">View product</span>
         </div>
       </Link>
     </div>

@@ -32,10 +32,20 @@ export function ProductSectionSkeleton() {
         <div className="h-3 bg-gray-100 animate-shimmer rounded w-24" />
         <div className="h-8 bg-gray-100 animate-shimmer rounded w-64" />
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-        {[...Array(5)].map((_, i) => (
-          <ProductSkeleton key={i} />
-        ))}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3.5 sm:grid-cols-4 lg:grid-cols-5 xl:gap-4">
+        {[...Array(5)].map((_, i) => {
+          const visibilityClass =
+            i < 3
+              ? "block"
+              : i === 3
+              ? "hidden sm:block"
+              : "hidden lg:block";
+          return (
+            <div key={i} className={visibilityClass}>
+              <ProductSkeleton />
+            </div>
+          );
+        })}
       </div>
     </section>
   );
