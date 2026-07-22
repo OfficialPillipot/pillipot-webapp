@@ -390,31 +390,31 @@ select {
 .product-description-content ul {
   list-style-type: disc !important;
   list-style-position: inside !important;
-  padding-left: 0.5rem !important;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  padding-left: 0.25rem !important;
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
 }
 
 .product-description-content ol {
   list-style-type: decimal !important;
   list-style-position: inside !important;
-  padding-left: 0.5rem !important;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  padding-left: 0.25rem !important;
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
 }
 
 .product-description-content li {
   display: list-item !important;
   list-style-type: inherit !important;
-  margin-top: 0.25rem;
-  margin-bottom: 0.25rem;
-  line-height: 1.6;
+  margin-top: 0.1rem !important;
+  margin-bottom: 0.1rem !important;
+  line-height: 1.4 !important;
 }
 
 .product-description-content p {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
+  margin-top: 0.25rem !important;
+  margin-bottom: 0.25rem !important;
+  line-height: 1.4 !important;
 }
 
 .product-description-content p:first-child {

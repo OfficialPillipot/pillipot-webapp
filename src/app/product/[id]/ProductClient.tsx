@@ -30,6 +30,10 @@ export default function ProductClient({ product }: { product: Product }) {
   const [canExpandDesc, setCanExpandDesc] = useState(false);
   const descRef = useRef<HTMLDivElement>(null);
 
+  const [isTitleExpanded, setIsTitleExpanded] = useState(false);
+  const [canExpandTitle, setCanExpandTitle] = useState(false);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+
   const cleanedDescription = cleanQuillHtml(product.description);
 
   useLayoutEffect(() => {
@@ -46,6 +50,13 @@ export default function ProductClient({ product }: { product: Product }) {
       setCanExpandDesc(overflow);
     }
   }, [cleanedDescription]);
+
+  useLayoutEffect(() => {
+    if (titleRef.current) {
+      const overflow = titleRef.current.scrollHeight > titleRef.current.clientHeight + 2;
+      setCanExpandTitle(overflow);
+    }
+  }, [product.name]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [zoomOpen, setZoomOpen] = useState(false);
@@ -206,12 +217,29 @@ export default function ProductClient({ product }: { product: Product }) {
               {/* Brand & Title */}
               <div>
                 <p className="text-pp-primary font-bold text-xs uppercase tracking-widest mb-1">{product.brand || "Pillipot"}</p>
-                <h1 className="text-3xl sm:text-4xl font-black leading-tight tracking-tight text-slate-950">{product.name}</h1>
-                <div className="flex items-center gap-2.5 mt-3">
-                  <div className="flex items-center gap-1 bg-green-500 text-white px-2.5 py-1 rounded-lg text-sm font-bold">
+                <div>
+                  <h1
+                    ref={titleRef}
+                    className={`text-lg sm:text-2xl font-bold leading-snug text-slate-950 transition-all ${
+                      isTitleExpanded ? "" : "line-clamp-2"
+                    }`}
+                  >
+                    {product.name}
+                  </h1>
+                  {canExpandTitle && (
+                    <button
+                      onClick={() => setIsTitleExpanded(!isTitleExpanded)}
+                      className="mt-1 text-xs font-bold text-pp-primary hover:underline inline-flex items-center gap-1 focus:outline-none"
+                    >
+                      {isTitleExpanded ? "See Less" : "See More"}
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2.5 mt-2.5">
+                  <div className="flex items-center gap-1 bg-green-500 text-white px-2.5 py-0.5 rounded-lg text-xs sm:text-sm font-bold">
                     {product.rating || 4.5} <LuStar className="w-3.5 h-3.5 fill-white ml-0.5" />
                   </div>
-                  <span className="text-slate-500 text-sm">{(product.reviewsCount || 0).toLocaleString()} ratings &amp; reviews</span>
+                  <span className="text-slate-500 text-xs sm:text-sm font-medium">{(product.reviewsCount || 0).toLocaleString()} ratings &amp; reviews</span>
                 </div>
               </div>
 
