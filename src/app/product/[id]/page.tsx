@@ -5,17 +5,21 @@ import { notFound } from "next/navigation";
 import ProductClient from "./ProductClient";
 import { Metadata } from "next";
 
+import { stripHtml } from "@/lib/htmlUtils";
+
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const product = await getProduct(id);
   if (!product) return { title: "Product Not Found" };
 
+  const plainDesc = stripHtml(product.description);
+
   return {
     title: `${product.name} | Pillipot`,
-    description: product.description?.slice(0, 160),
+    description: plainDesc ? plainDesc.slice(0, 160) : undefined,
     openGraph: {
       title: product.name,
-      description: product.description,
+      description: plainDesc,
       images: [product.imageUrl || ""],
     },
   };
