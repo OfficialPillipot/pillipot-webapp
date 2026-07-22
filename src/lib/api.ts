@@ -510,6 +510,14 @@ export type OrderApiItem = {
   quantity: number;
   sellingAmount: number;
   imageUrl?: string;
+  image?: string;
+  productImage?: string;
+  product_image?: string;
+  product?: {
+    imageUrl?: string;
+    image?: string;
+    images?: string[];
+  };
   deliveryFee?: number;
 };
 

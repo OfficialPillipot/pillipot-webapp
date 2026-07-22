@@ -15,6 +15,7 @@ import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
+import OrderItemImage from "@/components/orders/OrderItemImage";
 
 type OrderItem = {
   id: string;
@@ -23,6 +24,14 @@ type OrderItem = {
   quantity: number;
   sellingAmount: number;
   imageUrl?: string;
+  image?: string;
+  productImage?: string;
+  product_image?: string;
+  product?: {
+    imageUrl?: string;
+    image?: string;
+    images?: string[];
+  };
 };
 
 type Order = {
@@ -418,17 +427,7 @@ export default function MyOrdersPage() {
                         <div className="space-y-5">
                           {order.items.map((item, idx) => (
                             <div key={idx} className="group/item flex gap-4">
-                              <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-[1rem] border border-slate-100 bg-[linear-gradient(180deg,#f8fbff_0%,#eef4ff_100%)] shadow-sm sm:h-24 sm:w-24">
-                                {item.imageUrl ? (
-                                  <img
-                                    src={item.imageUrl}
-                                    alt={item.productName}
-                                    className="h-full w-full object-cover transition-transform duration-500 group-hover/item:scale-110"
-                                  />
-                                ) : (
-                                  <LuPackage className="h-8 w-8 text-slate-200" />
-                                )}
-                              </div>
+                              <OrderItemImage item={item} />
                               <div className="flex-1 min-w-0">
                                 <p
                                   className="mb-1 line-clamp-2 cursor-pointer text-[0.875rem] font-bold leading-snug text-pp-primary hover:underline"
@@ -555,13 +554,12 @@ export default function MyOrdersPage() {
 
             <form onSubmit={handleReviewSubmit} className="p-6 space-y-5">
               <div className="flex gap-4 items-center p-3 bg-gray-50 rounded-2xl">
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0 flex items-center justify-center">
-                  {reviewingProduct.imageUrl ? (
-                    <img src={reviewingProduct.imageUrl} alt={reviewingProduct.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <LuPackage className="w-6 h-6 text-gray-200" />
-                  )}
-                </div>
+                <OrderItemImage
+                  item={{ productId: reviewingProduct.id, productName: reviewingProduct.name, imageUrl: reviewingProduct.imageUrl }}
+                  className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-gray-200 shrink-0 flex items-center justify-center"
+                  imgClassName="h-full w-full object-cover"
+                  iconClassName="w-6 h-6 text-gray-200"
+                />
                 <p className="text-sm font-bold text-gray-900 line-clamp-2">{reviewingProduct.name}</p>
               </div>
 
