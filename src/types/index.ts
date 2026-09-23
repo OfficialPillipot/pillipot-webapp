@@ -18,6 +18,11 @@ export interface Product {
   brand?: string;
   isAssured?: boolean;
   stockQuantity?: number;
+  preparationDays?: number;
+  allowPhotoUpload?: boolean;
+  allowTextInput?: boolean;
+  customTextPrompt?: string;
+  customTextLimit?: number;
 }
 
 export interface Category {

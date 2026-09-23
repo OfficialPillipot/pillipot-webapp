@@ -76,6 +76,10 @@ export interface Product {
   codDeliveryCharge?: number;
   codDeliveryMilestones?: { quantity: number; charge: number }[];
   preparationDays?: number;
+  allowPhotoUpload?: boolean;
+  allowTextInput?: boolean;
+  customTextPrompt?: string;
+  customTextLimit?: number;
 }
 
 export interface ProductOffer {
@@ -287,6 +291,9 @@ export interface CartItemApi {
   id: string;
   product: Product;
   quantity: number;
+  deliveryDate?: string;
+  customText?: string;
+  customPhotoUrl?: string;
 }
 
 export async function fetchCart(token: string): Promise<CartItemApi[]> {
@@ -305,7 +312,32 @@ export type CartMutationResponse = {
   message?: string;
 };
 
-export async function addToCartApi(token: string, productId: string, quantity: number = 1, deliveryDate?: string): Promise<CartMutationResponse> {
+export async function uploadCustomPhotoApi(file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("photo", file);
+  const res = await fetch(`${API_URL}/customer/products/upload-custom-photo`, {
+    method: "POST",
+    body: formData,
+  });
+  if (!res.ok) {
+    let msg = "Failed to upload photo";
+    try {
+      const d = await res.json();
+      if (d.message) msg = Array.isArray(d.message) ? d.message[0] : d.message;
+    } catch {}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+export async function addToCartApi(
+  token: string,
+  productId: string,
+  quantity: number = 1,
+  deliveryDate?: string,
+  customText?: string,
+  customPhotoUrl?: string
+): Promise<CartMutationResponse> {
   return fetchJson<CartMutationResponse>("/customer/cart", {
     method: "POST",
     cache: "no-store",
@@ -313,7 +345,7 @@ export async function addToCartApi(token: string, productId: string, quantity: n
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ productId, quantity, deliveryDate }),
+    body: JSON.stringify({ productId, quantity, deliveryDate, customText, customPhotoUrl }),
   });
 }
 
@@ -399,6 +431,10 @@ export type CheckoutCartItem = {
   quantity?: number;
   price: number;
   name?: string;
+  deliveryDate?: string;
+  customText?: string;
+  customPhotoUrl?: string;
+  customNote?: string;
 };
 
 export type CheckoutCustomerInfo = Partial<CustomerAddress> & {

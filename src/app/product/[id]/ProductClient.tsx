@@ -1,10 +1,30 @@
 "use client";
 
-import { useState, useRef, useLayoutEffect } from "react";
+import { useState, useRef, useLayoutEffect, useEffect } from "react";
 import { type Product } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
-import { LuStar, LuShoppingCart, LuZap, LuTag, LuTruck, LuRotateCcw, LuHeart, LuX, LuChevronLeft, LuChevronRight, LuPlay, LuCalendarDays, LuClock, LuCheck } from "react-icons/lu";
+import { 
+  LuStar, 
+  LuShoppingCart, 
+  LuZap, 
+  LuTag, 
+  LuTruck, 
+  LuRotateCcw, 
+  LuHeart, 
+  LuX, 
+  LuChevronLeft, 
+  LuChevronRight, 
+  LuPlay, 
+  LuCalendarDays, 
+  LuClock, 
+  LuCheck,
+  LuSparkles,
+  LuPencil,
+  LuTrash2,
+  LuImage,
+  LuType
+} from "react-icons/lu";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useRouter } from "next/navigation";
@@ -152,7 +172,50 @@ export default function ProductClient({ product }: { product: Product }) {
     allImages.push(`data:image/svg+xml;base64,${btoa('<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="800" fill="#F3F4FB"/><path d="M400 330V470M330 400H470" stroke="#D1D5DB" stroke-width="4" stroke-linecap="round"/><circle cx="400" cy="400" r="100" stroke="#D1D5DB" stroke-width="4" stroke-dasharray="8 8"/><text x="400" y="550" text-anchor="middle" fill="#9CA3AF" font-family="sans-serif" font-size="20" font-weight="600" letter-spacing="0.1em">NO IMAGE AVAILABLE</text></svg>')}`);
   }
 
+  const isCustomizable = !!(product.allowPhotoUpload || product.allowTextInput);
+  const [savedCustomization, setSavedCustomization] = useState<{
+    customText?: string;
+    customPhotoUrl?: string;
+    customNote?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(`pillipot_customization_${product.id}`);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.customText || parsed.customPhotoUrl || parsed.customNote) {
+          setSavedCustomization(parsed);
+        } else {
+          setSavedCustomization(null);
+        }
+      } else {
+        setSavedCustomization(null);
+      }
+    } catch {
+      setSavedCustomization(null);
+    }
+  }, [product.id]);
+
+  const hasCustomization = !!(
+    savedCustomization?.customText || 
+    savedCustomization?.customPhotoUrl || 
+    savedCustomization?.customNote
+  );
+
+  const handleRemoveCustomization = () => {
+    try {
+      localStorage.removeItem(`pillipot_customization_${product.id}`);
+    } catch {}
+    setSavedCustomization(null);
+    success("Customization removed");
+  };
+
   const handleAddToCart = () => {
+    if (isCustomizable && !hasCustomization) {
+      router.push(`/product/${product.id}/personalize`);
+      return;
+    }
     if (isInCart) {
       router.push("/cart");
       return;
@@ -161,16 +224,39 @@ export default function ProductClient({ product }: { product: Product }) {
       setIsLoginModalOpen(true);
       return;
     }
-    addToCart(product, 1, selectedDeliveryDate);
+    addToCart(
+      product,
+      1,
+      selectedDeliveryDate,
+      savedCustomization?.customText,
+      savedCustomization?.customPhotoUrl
+    );
   };
 
   const handleBuyNow = () => {
+    if (isCustomizable && !hasCustomization) {
+      router.push(`/product/${product.id}/personalize`);
+      return;
+    }
     if (!user) {
       setIsLoginModalOpen(true);
       return;
     }
-    // Production-grade: Pass the ID and deliveryDate to checkout.
-    router.push(`/checkout?buyNow=${product.id}&qty=1&deliveryDate=${encodeURIComponent(selectedDeliveryDate)}`);
+    const params = new URLSearchParams({
+      buyNow: product.id,
+      qty: "1",
+      deliveryDate: selectedDeliveryDate,
+    });
+    if (savedCustomization?.customText) {
+      params.append("customText", savedCustomization.customText);
+    }
+    if (savedCustomization?.customPhotoUrl) {
+      params.append("customPhotoUrl", savedCustomization.customPhotoUrl);
+    }
+    if (savedCustomization?.customNote) {
+      params.append("customNote", savedCustomization.customNote);
+    }
+    router.push(`/checkout?${params.toString()}`);
   };
 
   const formatPrice = (num: number) =>
@@ -467,6 +553,105 @@ export default function ProductClient({ product }: { product: Product }) {
                 </div>
               </div>
 
+              {/* Customization Details or Personalized Callout */}
+              {isCustomizable && (
+                <div className="space-y-3">
+                  {hasCustomization ? (
+                    <div className="rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/60 p-4 sm:p-5 space-y-3 shadow-xs">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-lg bg-purple-600/10 flex items-center justify-center text-purple-600">
+                            <LuSparkles className="w-4 h-4" />
+                          </div>
+                          <span className="text-xs sm:text-sm font-black text-purple-950">
+                            Your Customization Details
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/product/${product.id}/personalize`)}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 hover:text-purple-900 bg-white px-2.5 py-1 rounded-full border border-purple-200 shadow-xs"
+                          >
+                            <LuPencil className="w-3 h-3" /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleRemoveCustomization}
+                            className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-white px-2.5 py-1 rounded-full border border-rose-200 shadow-xs"
+                          >
+                            <LuTrash2 className="w-3 h-3" /> Remove
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-4 bg-white rounded-xl p-3 border border-purple-100">
+                        {savedCustomization?.customPhotoUrl && (
+                          <div className="flex items-center gap-2.5">
+                            <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 shrink-0">
+                              <Image
+                                src={savedCustomization.customPhotoUrl}
+                                alt="Customized photo"
+                                fill
+                                sizes="48px"
+                                className="object-cover"
+                              />
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 block uppercase">Photo Attached</span>
+                              <span className="text-xs font-semibold text-emerald-600">Custom Photo Ready</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {savedCustomization?.customText && (
+                          <div className="flex-1 min-w-[140px]">
+                            <span className="text-[10px] font-bold text-slate-400 block uppercase">Custom Text</span>
+                            <p className="text-xs font-semibold text-slate-800 break-words italic">
+                              "{savedCustomization.customText}"
+                            </p>
+                          </div>
+                        )}
+
+                        {savedCustomization?.customNote && (
+                          <div className="w-full pt-2 border-t border-purple-50">
+                            <span className="text-[10px] font-bold text-slate-400 block uppercase">Note / Special Instructions</span>
+                            <p className="text-xs text-slate-700 italic break-words">
+                              "{savedCustomization.customNote}"
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-purple-200/80 bg-gradient-to-r from-purple-50 via-indigo-50/40 to-pp-primary/5 p-4 flex items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-xl bg-purple-600/10 flex items-center justify-center text-purple-600 shrink-0">
+                          <LuSparkles className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">Personalization Available</p>
+                          <p className="text-[11px] text-slate-500">
+                            {product.allowPhotoUpload && product.allowTextInput
+                              ? "Upload your photo or add custom text"
+                              : product.allowPhotoUpload
+                              ? "Upload your custom photo"
+                              : "Enter your custom text or name"}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/product/${product.id}/personalize`)}
+                        className="shrink-0 text-xs font-bold text-purple-700 bg-white hover:bg-purple-50 px-3 py-1.5 rounded-full border border-purple-200 shadow-xs transition-colors"
+                      >
+                        Personalize Now
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Action buttons – desktop */}
               <div className="hidden sm:flex gap-4">
                 <button
@@ -480,10 +665,19 @@ export default function ProductClient({ product }: { product: Product }) {
                 <button
                   onClick={handleBuyNow}
                   disabled={isOutOfStock}
-                  className={`flex-1 flex items-center justify-center gap-2 rounded-full bg-pp-primary text-white px-6 py-4 font-bold shadow-lg shadow-pp-primary/25 hover:scale-[1.02] active:scale-95 transition-all ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : "animate-attention"}`}
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-full ${
+                    isCustomizable && !hasCustomization
+                      ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-pp-primary text-white shadow-purple-500/25"
+                      : "bg-pp-primary text-white shadow-pp-primary/25"
+                  } px-6 py-4 font-bold shadow-lg hover:scale-[1.02] active:scale-95 transition-all ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : "animate-attention"}`}
                 >
                   {isOutOfStock ? (
                     <>OUT OF STOCK</>
+                  ) : isCustomizable && !hasCustomization ? (
+                    <>
+                      <LuSparkles className="w-5 h-5 text-amber-300" />
+                      Personalize
+                    </>
                   ) : (
                     <>
                       <LuZap className="w-5 h-5" />
@@ -612,10 +806,18 @@ export default function ProductClient({ product }: { product: Product }) {
             <button
               onClick={handleBuyNow}
               disabled={isOutOfStock}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-full bg-pp-primary text-white py-4 text-sm font-bold shadow-lg shadow-pp-primary/20 transition-all active:scale-95 ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : ""}`}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-full ${
+                isCustomizable && !hasCustomization
+                  ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-pp-primary text-white shadow-purple-500/20"
+                  : "bg-pp-primary text-white shadow-pp-primary/20"
+              } py-4 text-sm font-bold shadow-lg transition-all active:scale-95 ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : ""}`}
             >
               {isOutOfStock ? (
                 <>OUT OF STOCK</>
+              ) : isCustomizable && !hasCustomization ? (
+                <>
+                  <LuSparkles className="w-5 h-5 text-amber-300" /> Personalize
+                </>
               ) : (
                 <>
                   <LuZap className="w-5 h-5" /> Buy at {formatPrice(product.price)}

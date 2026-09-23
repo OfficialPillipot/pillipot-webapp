@@ -24,6 +24,9 @@ function CheckoutContent() {
   const buyNowId = searchParams.get("buyNow");
   const buyNowQty = parseInt(searchParams.get("qty") || "1");
   const buyNowDeliveryDate = searchParams.get("deliveryDate") || undefined;
+  const buyNowCustomText = searchParams.get("customText") || undefined;
+  const buyNowCustomPhotoUrl = searchParams.get("customPhotoUrl") || undefined;
+  const buyNowCustomNote = searchParams.get("customNote") || undefined;
 
   const [urlCart, setUrlCart] = useState<any[] | null>(null);
   const [isUrlCartLoading, setIsUrlCartLoading] = useState(false);
@@ -39,6 +42,9 @@ function CheckoutContent() {
               ...product,
               cartQuantity: buyNowQty,
               deliveryDate: buyNowDeliveryDate,
+              customText: buyNowCustomText,
+              customPhotoUrl: buyNowCustomPhotoUrl,
+              customNote: buyNowCustomNote,
             }]);
           }
         } catch (e) {
@@ -49,7 +55,7 @@ function CheckoutContent() {
       }
     };
     fetchBuyNowProduct();
-  }, [buyNowId, buyNowQty, buyNowDeliveryDate]);
+  }, [buyNowId, buyNowQty, buyNowDeliveryDate, buyNowCustomText, buyNowCustomPhotoUrl, buyNowCustomNote]);
 
   const cart = urlCart || globalCart;
   const [enrichedCart, setEnrichedCart] = useState<any[]>([]);
@@ -65,7 +71,14 @@ function CheckoutContent() {
             if (hasData && item.codDeliveryMilestones) return item;
 
             const fullProd = await getProduct(item.id);
-            return fullProd ? { ...item, ...fullProd, deliveryDate: item.deliveryDate } : item;
+            return fullProd ? {
+              ...item,
+              ...fullProd,
+              deliveryDate: item.deliveryDate,
+              customText: item.customText,
+              customPhotoUrl: item.customPhotoUrl,
+              customNote: item.customNote,
+            } : item;
           }));
           setEnrichedCart(enriched);
         } catch (e) {
@@ -847,6 +860,25 @@ function CheckoutContent() {
                             <p className="text-xs font-bold text-pp-primary mt-1">
                               📅 Delivery date: {item.deliveryDate}
                             </p>
+                          )}
+                          {(item.customText || item.customPhotoUrl || item.customNote) && (
+                            <div className="mt-2 space-y-1.5 p-2 rounded-xl bg-purple-50 border border-purple-100 text-xs text-purple-900 font-medium w-fit max-w-full">
+                              <div className="flex items-center gap-2">
+                                {item.customPhotoUrl && (
+                                  <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-purple-200">
+                                    <Image src={item.customPhotoUrl} alt="Custom Photo" fill sizes="32px" className="object-cover" />
+                                  </div>
+                                )}
+                                {item.customText && (
+                                  <span className="truncate">Personalized: &ldquo;{item.customText}&rdquo;</span>
+                                )}
+                              </div>
+                              {item.customNote && (
+                                <p className="text-[11px] text-purple-700 italic border-t border-purple-100 pt-1">
+                                  Note: &ldquo;{item.customNote}&rdquo;
+                                </p>
+                              )}
+                            </div>
                           )}
                           
                           <div className="flex gap-4 mt-4">

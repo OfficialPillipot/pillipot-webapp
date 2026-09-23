@@ -163,6 +163,19 @@ export default function CartPage() {
                       <span>Delivery date: {item.deliveryDate}</span>
                     </div>
                   )}
+
+                  {(item.customText || item.customPhotoUrl) && (
+                    <div className="mt-2 flex items-center gap-2 p-1.5 rounded-lg bg-purple-50 border border-purple-100 text-[11px] text-purple-900 font-medium">
+                      {item.customPhotoUrl && (
+                        <div className="relative w-6 h-6 rounded overflow-hidden shrink-0 border border-purple-200">
+                          <Image src={item.customPhotoUrl} alt="Customized" fill sizes="24px" className="object-cover" />
+                        </div>
+                      )}
+                      {item.customText && (
+                        <span className="truncate">Personalized: &ldquo;{item.customText}&rdquo;</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

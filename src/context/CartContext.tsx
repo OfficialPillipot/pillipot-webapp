@@ -5,14 +5,22 @@ import { Product, fetchCart, addToCartApi, updateCartQuantityApi, clearCartApi }
 import { useAuth } from "./AuthContext";
 import { useToast } from "./ToastContext";
 
-interface CartItem extends Product {
+export interface CartItem extends Product {
   cartQuantity: number;
   deliveryDate?: string;
+  customText?: string;
+  customPhotoUrl?: string;
 }
 
 interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number, deliveryDate?: string) => void;
+  addToCart: (
+    product: Product,
+    quantity?: number,
+    deliveryDate?: string,
+    customText?: string,
+    customPhotoUrl?: string
+  ) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -60,6 +68,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             ...item.product,
             cartQuantity: item.quantity,
             deliveryDate: (item as any).deliveryDate || undefined,
+            customText: (item as any).customText || undefined,
+            customPhotoUrl: (item as any).customPhotoUrl || undefined,
           }));
           setCart(formattedItems);
         } catch (error) {
@@ -110,18 +120,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }, 500);
   }, [token, user]);
 
-  const addToCart = useCallback(async (product: Product, quantity: number = 1, deliveryDate?: string) => {
+  const addToCart = useCallback(async (
+    product: Product,
+    quantity: number = 1,
+    deliveryDate?: string,
+    customText?: string,
+    customPhotoUrl?: string
+  ) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
+      const existing = prev.find(
+        (item) => item.id === product.id && item.customText === customText && item.customPhotoUrl === customPhotoUrl
+      );
       if (existing) {
         const newQty = existing.cartQuantity + quantity;
         debouncedSync(product.id, newQty);
         return prev.map((item) =>
-          item.id === product.id ? { ...item, cartQuantity: newQty, deliveryDate: deliveryDate || item.deliveryDate } : item
+          item === existing ? { ...item, cartQuantity: newQty, deliveryDate: deliveryDate || item.deliveryDate } : item
         );
       }
-      if (user && token) addToCartApi(token, product.id, quantity, deliveryDate);
-      return [...prev, { ...product, cartQuantity: quantity, deliveryDate }];
+      if (user && token) addToCartApi(token, product.id, quantity, deliveryDate, customText, customPhotoUrl);
+      return [...prev, { ...product, cartQuantity: quantity, deliveryDate, customText, customPhotoUrl }];
     });
   }, [debouncedSync, success, token, user]);
 
