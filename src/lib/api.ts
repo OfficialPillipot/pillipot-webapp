@@ -75,6 +75,7 @@ export interface Product {
   tags?: string[];
   codDeliveryCharge?: number;
   codDeliveryMilestones?: { quantity: number; charge: number }[];
+  preparationDays?: number;
 }
 
 export interface ProductOffer {
@@ -304,7 +305,7 @@ export type CartMutationResponse = {
   message?: string;
 };
 
-export async function addToCartApi(token: string, productId: string, quantity: number = 1): Promise<CartMutationResponse> {
+export async function addToCartApi(token: string, productId: string, quantity: number = 1, deliveryDate?: string): Promise<CartMutationResponse> {
   return fetchJson<CartMutationResponse>("/customer/cart", {
     method: "POST",
     cache: "no-store",
@@ -312,7 +313,7 @@ export async function addToCartApi(token: string, productId: string, quantity: n
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ productId, quantity }),
+    body: JSON.stringify({ productId, quantity, deliveryDate }),
   });
 }
 

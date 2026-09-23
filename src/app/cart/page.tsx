@@ -157,6 +157,12 @@ export default function CartPage() {
                       </button>
                     </div>
                   </div>
+
+                  {item.deliveryDate && (
+                    <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-pp-primary bg-pp-primary/5 px-2.5 py-1 rounded-lg w-fit">
+                      <span>Delivery date: {item.deliveryDate}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

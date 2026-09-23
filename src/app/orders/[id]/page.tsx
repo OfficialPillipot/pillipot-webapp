@@ -140,7 +140,7 @@ export default function OrderDetailsPage() {
                     </div>
                     <div>
                       <h2 className={`text-lg sm:text-xl font-black ${statusInfo.color}`}>{statusInfo.label}</h2>
-                      <p className="text-xs sm:text-sm text-gray-500 font-bold">Updated on {new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p className="text-xs sm:text-sm text-gray-500 font-bold">Updated on {new Date(order.createdAt).toLocaleDateString("en-IN")}</p>
                     </div>
                   </div>
                </div>

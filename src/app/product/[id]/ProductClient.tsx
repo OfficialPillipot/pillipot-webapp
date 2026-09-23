@@ -4,7 +4,7 @@ import { useState, useRef, useLayoutEffect } from "react";
 import { type Product } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
-import { LuStar, LuShoppingCart, LuZap, LuTag, LuTruck, LuRotateCcw, LuHeart, LuX, LuChevronLeft, LuChevronRight, LuPlay, LuCalendarDays } from "react-icons/lu";
+import { LuStar, LuShoppingCart, LuZap, LuTag, LuTruck, LuRotateCcw, LuHeart, LuX, LuChevronLeft, LuChevronRight, LuPlay, LuCalendarDays, LuClock, LuCheck } from "react-icons/lu";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,68 @@ export default function ProductClient({ product }: { product: Product }) {
   const { success } = useToast();
   const isOutOfStock = product.stockQuantity <= 0;
 
-  const [deliveryDateStr, setDeliveryDateStr] = useState("");
+  // Preparation days specified by seller (defaults to 2 if not set)
+  const prepDays = Math.max(0, product.preparationDays !== undefined && product.preparationDays !== null ? Number(product.preparationDays) : 2);
+
+  const formatYmd = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const getMinDeliveryDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + prepDays);
+    return d;
+  };
+
+  const minDateStr = formatYmd(getMinDeliveryDate());
+
+  const getMaxDeliveryDate = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + prepDays + 90);
+    return d;
+  };
+
+  const maxDateStr = formatYmd(getMaxDeliveryDate());
+
+  const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string>(minDateStr);
+  const datePickerRef = useRef<HTMLDivElement>(null);
+
+  const formatDeliveryDisplay = (ymd: string) => {
+    if (!ymd) return "";
+    const [y, m, d] = ymd.split("-").map(Number);
+    if (!y || !m || !d) return ymd;
+    const dateObj = new Date(y, m - 1, d);
+    return dateObj.toLocaleDateString("en-IN", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+    });
+  };
+
+  const handleDateChange = (val: string) => {
+    if (!val) return;
+    if (val < minDateStr) {
+      setSelectedDeliveryDate(minDateStr);
+      return;
+    }
+    setSelectedDeliveryDate(val);
+  };
+
+  // Generate 3 quick date options starting from minDate
+  const quickDateOptions = [0, 1, 2].map((offset) => {
+    const d = new Date();
+    d.setDate(d.getDate() + prepDays + offset);
+    const ymd = formatYmd(d);
+    return {
+      ymd,
+      isEarliest: offset === 0,
+      label: offset === 0 ? `Earliest: ${formatDeliveryDisplay(ymd)}` : formatDeliveryDisplay(ymd),
+    };
+  });
+
   const [isDescExpanded, setIsDescExpanded] = useState(false);
   const [canExpandDesc, setCanExpandDesc] = useState(false);
   const descRef = useRef<HTMLDivElement>(null);
@@ -38,10 +99,9 @@ export default function ProductClient({ product }: { product: Product }) {
 
   useLayoutEffect(() => {
     window.scrollTo(0, 0);
-    const date = new Date();
-    date.setDate(date.getDate() + 5);
-    setDeliveryDateStr(date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
-  }, [product.id]);
+    const d = getMinDeliveryDate();
+    setSelectedDeliveryDate(formatYmd(d));
+  }, [product.id, prepDays]);
 
   useLayoutEffect(() => {
     if (descRef.current) {
@@ -101,7 +161,7 @@ export default function ProductClient({ product }: { product: Product }) {
       setIsLoginModalOpen(true);
       return;
     }
-    addToCart(product);
+    addToCart(product, 1, selectedDeliveryDate);
   };
 
   const handleBuyNow = () => {
@@ -109,8 +169,8 @@ export default function ProductClient({ product }: { product: Product }) {
       setIsLoginModalOpen(true);
       return;
     }
-    // Production-grade: Only pass the ID. The checkout page will fetch the latest secure data from the server.
-    router.push(`/checkout?buyNow=${product.id}&qty=1`);
+    // Production-grade: Pass the ID and deliveryDate to checkout.
+    router.push(`/checkout?buyNow=${product.id}&qty=1&deliveryDate=${encodeURIComponent(selectedDeliveryDate)}`);
   };
 
   const formatPrice = (num: number) =>
@@ -239,7 +299,7 @@ export default function ProductClient({ product }: { product: Product }) {
                   <div className="flex items-center gap-1 bg-green-500 text-white px-2.5 py-0.5 rounded-lg text-xs sm:text-sm font-bold">
                     {product.rating || 4.5} <LuStar className="w-3.5 h-3.5 fill-white ml-0.5" />
                   </div>
-                  <span className="text-slate-500 text-xs sm:text-sm font-medium">{(product.reviewsCount || 0).toLocaleString()} ratings &amp; reviews</span>
+                  <span className="text-slate-500 text-xs sm:text-sm font-medium">{(product.reviewsCount || 0).toLocaleString("en-IN")} ratings &amp; reviews</span>
                 </div>
               </div>
 
@@ -307,10 +367,103 @@ export default function ProductClient({ product }: { product: Product }) {
                   <span className="text-[10px] font-bold text-slate-700">3 Day Returns</span>
                   <span className="text-[9px] text-slate-400 leading-tight">Hassle-free swap</span>
                 </div>
-                <div className="flex flex-col items-center gap-1 rounded-xl border border-slate-100 bg-white p-3 text-center shadow-sm">
-                  <LuCalendarDays className="w-5 h-5 text-pp-primary" />
-                  <span className="text-[10px] font-bold text-slate-700">{deliveryDateStr ? `Delivery by ${deliveryDateStr}` : "Calculating..."}</span>
-                  <span className="text-[9px] text-slate-400 leading-tight">Fast tracking</span>
+                <button 
+                  type="button"
+                  onClick={() => datePickerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })}
+                  className="flex flex-col items-center gap-1 rounded-xl border border-pp-primary/20 bg-pp-primary/5 p-3 text-center shadow-sm hover:border-pp-primary/40 hover:bg-pp-primary/10 transition-all cursor-pointer group"
+                >
+                  <LuCalendarDays className="w-5 h-5 text-pp-primary group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-bold text-slate-800">
+                    {selectedDeliveryDate ? `Delivery: ${formatDeliveryDisplay(selectedDeliveryDate)}` : "Choose Date"}
+                  </span>
+                  <span className="text-[9px] text-pp-primary font-bold leading-tight">Click to change</span>
+                </button>
+              </div>
+
+              {/* Delivery Date Picker Section */}
+              <div 
+                ref={datePickerRef}
+                className="rounded-2xl border border-pp-primary/20 bg-gradient-to-br from-white via-white to-pp-primary/5 p-4 sm:p-5 shadow-sm space-y-3.5 transition-all"
+              >
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pp-primary/10 text-pp-primary shadow-sm">
+                      <LuCalendarDays className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight">
+                        Select Preferred Delivery Date
+                      </h3>
+                      <p className="text-[11px] text-slate-500 font-medium">Choose when you would like to receive this order</p>
+                    </div>
+                  </div>
+
+                  {prepDays > 0 ? (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-[10px] font-bold text-amber-800 shadow-sm">
+                      <LuClock className="h-3 w-3" />
+                      {prepDays} day{prepDays === 1 ? "" : "s"} preparation
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[10px] font-bold text-emerald-800 shadow-sm">
+                      <LuCheck className="h-3 w-3" />
+                      Ready to ship
+                    </span>
+                  )}
+                </div>
+
+                {/* Quick Date Chips */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Quick options</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {quickDateOptions.map((opt, idx) => {
+                      const isSelected = selectedDeliveryDate === opt.ymd;
+                      return (
+                        <button
+                          key={opt.ymd}
+                          type="button"
+                          onClick={() => setSelectedDeliveryDate(opt.ymd)}
+                          className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all ${
+                            isSelected
+                              ? "border-pp-primary bg-pp-primary text-white shadow-md shadow-pp-primary/25 scale-[1.02]"
+                              : "border-slate-200 bg-white text-slate-700 hover:border-pp-primary/30 hover:bg-slate-50"
+                          }`}
+                        >
+                          <span className={`text-[10px] font-black uppercase tracking-wider ${isSelected ? "text-white/80" : "text-pp-primary"}`}>
+                            {opt.isEarliest ? "Earliest" : `+${idx} Day${idx > 1 ? "s" : ""}`}
+                          </span>
+                          <span className="text-xs sm:text-sm font-black mt-0.5">
+                            {formatDeliveryDisplay(opt.ymd)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Custom Date Input */}
+                <div className="space-y-1 pt-1">
+                  <label className="block text-[11px] font-bold text-slate-600">
+                    Or pick another date:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      min={minDateStr}
+                      max={maxDateStr}
+                      value={selectedDeliveryDate}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-slate-800 shadow-sm focus:border-pp-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-pp-primary/20 transition-all cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    * Dates before {formatDeliveryDisplay(minDateStr)} are disabled due to preparation days.
+                  </p>
+                </div>
+
+                {/* Selected Date Confirmation Banner */}
+                <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200/80 px-3.5 py-2 text-xs font-bold text-emerald-800">
+                  <LuCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                  <span>Delivery scheduled for <strong className="underline decoration-emerald-500/50 underline-offset-2">{formatDeliveryDisplay(selectedDeliveryDate || minDateStr)}</strong></span>
                 </div>
               </div>
 

@@ -23,6 +23,7 @@ function CheckoutContent() {
   const searchParams = useSearchParams();
   const buyNowId = searchParams.get("buyNow");
   const buyNowQty = parseInt(searchParams.get("qty") || "1");
+  const buyNowDeliveryDate = searchParams.get("deliveryDate") || undefined;
 
   const [urlCart, setUrlCart] = useState<any[] | null>(null);
   const [isUrlCartLoading, setIsUrlCartLoading] = useState(false);
@@ -36,7 +37,8 @@ function CheckoutContent() {
           if (product) {
             setUrlCart([{
               ...product,
-              cartQuantity: buyNowQty
+              cartQuantity: buyNowQty,
+              deliveryDate: buyNowDeliveryDate,
             }]);
           }
         } catch (e) {
@@ -47,7 +49,7 @@ function CheckoutContent() {
       }
     };
     fetchBuyNowProduct();
-  }, [buyNowId, buyNowQty]);
+  }, [buyNowId, buyNowQty, buyNowDeliveryDate]);
 
   const cart = urlCart || globalCart;
   const [enrichedCart, setEnrichedCart] = useState<any[]>([]);
@@ -63,7 +65,7 @@ function CheckoutContent() {
             if (hasData && item.codDeliveryMilestones) return item;
 
             const fullProd = await getProduct(item.id);
-            return fullProd ? { ...item, ...fullProd } : item;
+            return fullProd ? { ...item, ...fullProd, deliveryDate: item.deliveryDate } : item;
           }));
           setEnrichedCart(enriched);
         } catch (e) {
@@ -841,6 +843,11 @@ function CheckoutContent() {
                             <p className="text-lg font-black text-gray-900">{formatPrice(item.price * item.cartQuantity)}</p>
                           </div>
                           <p className="text-sm text-gray-500 font-medium">Qty: {item.cartQuantity} | <span className="text-pp-success font-bold text-[10px] uppercase tracking-wider">In Stock</span></p>
+                          {item.deliveryDate && (
+                            <p className="text-xs font-bold text-pp-primary mt-1">
+                              📅 Delivery date: {item.deliveryDate}
+                            </p>
+                          )}
                           
                           <div className="flex gap-4 mt-4">
                             <button 

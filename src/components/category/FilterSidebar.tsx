@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { LuStar } from "react-icons/lu";
 
 interface FilterSidebarProps {
@@ -11,9 +11,14 @@ interface FilterSidebarProps {
 export default function FilterSidebar({ categoryName }: FilterSidebarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "150000");
   const [minRating, setMinRating] = useState(searchParams.get("minRating") || "");
+
+  useEffect(() => {
+    setMaxPrice(searchParams.get("maxPrice") || "150000");
+    setMinRating(searchParams.get("minRating") || "");
+  }, [searchParams]);
 
   const updateFilters = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -58,7 +63,7 @@ export default function FilterSidebar({ categoryName }: FilterSidebarProps) {
         <div className="border-b border-slate-100 p-5">
           <div className="flex items-center justify-between mb-4">
             <span className="text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Price</span>
-            <button 
+            <button
               onClick={() => {
                 setMaxPrice("150000");
                 updateFilters({ maxPrice: "" });
@@ -69,24 +74,27 @@ export default function FilterSidebar({ categoryName }: FilterSidebarProps) {
             </button>
           </div>
           <div className="px-2">
-            <input 
-              type="range" 
-              min="0" 
-              max="150000" 
+            <input
+              type="range"
+              min="0"
+              max="150000"
               step="500"
               value={maxPrice}
               onChange={handlePriceChange}
               onMouseUp={handlePriceCommit}
               onTouchEnd={handlePriceCommit}
-              className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-100 accent-pp-primary" 
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-slate-100 accent-pp-primary"
             />
             <div className="flex items-center gap-2 mt-4">
               <div className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-2 py-2 text-center text-xs font-bold text-slate-400">
                 ₹0
               </div>
               <span className="text-slate-300">to</span>
-              <div className="flex-1 rounded-xl border border-pp-cyan/20 bg-pp-surface-alt px-2 py-2 text-center text-xs font-black text-pp-primary">
-                ₹{Number(maxPrice).toLocaleString()}
+              <div
+                suppressHydrationWarning
+                className="flex-1 rounded-xl border border-pp-cyan/20 bg-pp-surface-alt px-2 py-2 text-center text-xs font-black text-pp-primary"
+              >
+                ₹{Number(maxPrice || 0).toLocaleString("en-IN")}
                 {maxPrice === "150000" && "+"}
               </div>
             </div>
@@ -97,13 +105,13 @@ export default function FilterSidebar({ categoryName }: FilterSidebarProps) {
           <span className="mb-4 block text-[11px] font-black uppercase tracking-[0.24em] text-slate-400">Customer Ratings</span>
           <div className="space-y-2.5">
             {[4, 3, 2, 1].map((rating) => (
-              <label 
-                key={rating} 
+              <label
+                key={rating}
                 className="group flex cursor-pointer items-center gap-3 rounded-2xl px-2 py-2 hover:bg-slate-50"
               >
                 <div className="relative flex items-center justify-center">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={minRating === rating.toString()}
                     onChange={() => handleRatingChange(rating.toString())}
                     className="peer h-4 w-4 cursor-pointer appearance-none rounded border-2 border-slate-200 checked:border-pp-primary checked:bg-pp-primary transition-all"
