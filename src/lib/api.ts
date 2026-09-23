@@ -720,14 +720,22 @@ export interface PincodeServiceabilityResponse {
   pickupAvailable?: boolean;
   isOda?: boolean;
   estimatedDays?: number;
+  expectedDeliveryDate?: string;
+  originPin?: string;
+  vendorName?: string;
+  tat?: number;
   message?: string;
   mode: "live" | "fallback";
 }
 
-export async function checkPincodeServiceability(pincode: string): Promise<PincodeServiceabilityResponse> {
+export async function checkPincodeServiceability(
+  pincode: string,
+  productId?: string,
+): Promise<PincodeServiceabilityResponse> {
   const cleanPin = String(pincode || "").trim();
   try {
-    const res = await fetch(`${API_URL}/deliveries/serviceability/${cleanPin}`, {
+    const query = productId ? `?productId=${encodeURIComponent(productId)}` : "";
+    const res = await fetch(`${API_URL}/deliveries/serviceability/${cleanPin}${query}`, {
       cache: "no-store",
     });
     if (!res.ok) {
@@ -750,5 +758,22 @@ export async function checkPincodeServiceability(pincode: string): Promise<Pinco
       message: "Delivery available",
       mode: "fallback",
     };
+  }
+}
+
+export async function getExpectedTat(
+  productId: string,
+  destinationPin: string,
+  mot: string = "S",
+) {
+  try {
+    const res = await fetch(
+      `${API_URL}/deliveries/expected-tat?productId=${encodeURIComponent(productId)}&destinationPin=${encodeURIComponent(destinationPin)}&mot=${encodeURIComponent(mot)}`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
   }
 }

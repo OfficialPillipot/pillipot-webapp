@@ -57,7 +57,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       {/* Image area */}
       <Link
-        href={isOutOfStock ? "#" : `/product/${product.id}`}
+        href={`/product/${product.id}`}
         className="relative block"
       >
         <div className="relative">

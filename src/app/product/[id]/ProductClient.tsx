@@ -121,10 +121,10 @@ export default function ProductClient({ product }: { product: Product }) {
       const savedPin = localStorage.getItem("customer_delivery_pincode");
       if (savedPin && /^\d{6}$/.test(savedPin)) {
         setPincodeInput(savedPin);
-        void checkPincodeServiceability(savedPin).then(res => setPincodeResult(res));
+        void checkPincodeServiceability(savedPin, product.id).then(res => setPincodeResult(res));
       }
     } catch {}
-  }, []);
+  }, [product.id]);
 
   const handlePincodeCheck = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -137,7 +137,7 @@ export default function ProductClient({ product }: { product: Product }) {
     setPincodeError(null);
     setIsCheckingPincode(true);
     try {
-      const res = await checkPincodeServiceability(clean);
+      const res = await checkPincodeServiceability(clean, product.id);
       setPincodeResult(res);
       try {
         localStorage.setItem("customer_delivery_pincode", clean);
@@ -442,6 +442,14 @@ export default function ProductClient({ product }: { product: Product }) {
                 )}
               </div>
 
+              {/* Out of Stock Notice */}
+              {isOutOfStock && (
+                <div className="rounded-2xl border border-rose-200 bg-rose-50/80 p-3.5 flex items-center gap-3 text-rose-800 text-xs sm:text-sm font-bold shadow-xs">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-rose-600 text-white shrink-0 text-xs">✕</span>
+                  <span>Currently Out of Stock. This product is temporarily unavailable for purchase.</span>
+                </div>
+              )}
+
               {/* Offers */}
               {offers.length > 0 && (
                 <div className="rounded-2xl border border-pp-primary/10 bg-pp-primary/5 p-4">
@@ -672,7 +680,17 @@ export default function ProductClient({ product }: { product: Product }) {
                         <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
                           <div className="flex items-center gap-1.5 text-slate-700 font-medium">
                             <LuTruck className="w-4 h-4 text-pp-primary shrink-0" />
-                            <span>Estimated: <strong>{pincodeResult.estimatedDays || 3} - {(pincodeResult.estimatedDays || 3) + 2} Days</strong></span>
+                            <span>
+                              {pincodeResult.expectedDeliveryDate ? (
+                                <>
+                                  Delivery by <strong>{new Date(pincodeResult.expectedDeliveryDate).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}</strong> ({pincodeResult.tat || pincodeResult.estimatedDays} Days)
+                                </>
+                              ) : (
+                                <>
+                                  Estimated: <strong>{pincodeResult.estimatedDays || 3} - {(pincodeResult.estimatedDays || 3) + 2} Days</strong>
+                                </>
+                              )}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5 font-medium">
                             <LuBanknote className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -681,6 +699,12 @@ export default function ProductClient({ product }: { product: Product }) {
                             </strong></span>
                           </div>
                         </div>
+                        {pincodeResult.originPin && (
+                          <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-slate-200/60 text-[10px] text-slate-500">
+                            <span>Dispatched via Delhivery Surface (mot: S)</span>
+                            <span>Pickup PIN: <strong className="text-slate-700">{pincodeResult.originPin}</strong></span>
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className="flex items-center gap-2">
