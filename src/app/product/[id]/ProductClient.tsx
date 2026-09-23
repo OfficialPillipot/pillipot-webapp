@@ -23,7 +23,10 @@ import {
   LuPencil,
   LuTrash2,
   LuImage,
-  LuType
+  LuType,
+  LuMapPin,
+  LuLoaderCircle,
+  LuBanknote
 } from "react-icons/lu";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -33,7 +36,7 @@ import { useToast } from "@/context/ToastContext";
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
-import { getProductOffers, getProductReviews } from "@/lib/api";
+import { getProductOffers, getProductReviews, checkPincodeServiceability, type PincodeServiceabilityResponse } from "@/lib/api";
 import { cleanQuillHtml } from "@/lib/htmlUtils";
 
 export default function ProductClient({ product }: { product: Product }) {
@@ -106,6 +109,45 @@ export default function ProductClient({ product }: { product: Product }) {
       label: offset === 0 ? `Earliest: ${formatDeliveryDisplay(ymd)}` : formatDeliveryDisplay(ymd),
     };
   });
+
+  // Pincode Serviceability State
+  const [pincodeInput, setPincodeInput] = useState<string>("");
+  const [isCheckingPincode, setIsCheckingPincode] = useState(false);
+  const [pincodeResult, setPincodeResult] = useState<PincodeServiceabilityResponse | null>(null);
+  const [pincodeError, setPincodeError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const savedPin = localStorage.getItem("customer_delivery_pincode");
+      if (savedPin && /^\d{6}$/.test(savedPin)) {
+        setPincodeInput(savedPin);
+        void checkPincodeServiceability(savedPin).then(res => setPincodeResult(res));
+      }
+    } catch {}
+  }, []);
+
+  const handlePincodeCheck = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const clean = pincodeInput.trim();
+    if (!/^\d{6}$/.test(clean)) {
+      setPincodeError("Please enter a valid 6-digit PIN code");
+      setPincodeResult(null);
+      return;
+    }
+    setPincodeError(null);
+    setIsCheckingPincode(true);
+    try {
+      const res = await checkPincodeServiceability(clean);
+      setPincodeResult(res);
+      try {
+        localStorage.setItem("customer_delivery_pincode", clean);
+      } catch {}
+    } catch {
+      setPincodeError("Failed to check delivery serviceability. Please try again.");
+    } finally {
+      setIsCheckingPincode(false);
+    }
+  };
 
   const [isDescExpanded, setIsDescExpanded] = useState(false);
   const [canExpandDesc, setCanExpandDesc] = useState(false);
@@ -551,6 +593,103 @@ export default function ProductClient({ product }: { product: Product }) {
                   <LuCheck className="h-4 w-4 shrink-0 text-emerald-600" />
                   <span>Delivery scheduled for <strong className="underline decoration-emerald-500/50 underline-offset-2">{formatDeliveryDisplay(selectedDeliveryDate || minDateStr)}</strong></span>
                 </div>
+              </div>
+
+              {/* Delhivery Pincode Serviceability Checker */}
+              <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pp-primary/10 text-pp-primary">
+                      <LuMapPin className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight">
+                        Check Delivery to Your Area
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-medium">
+                        Enter your 6-digit PIN code to check serviceability & COD
+                      </p>
+                    </div>
+                  </div>
+                  {pincodeResult?.serviceable && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                      ✓ Serviceable
+                    </span>
+                  )}
+                </div>
+
+                <form onSubmit={handlePincodeCheck} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={pincodeInput}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, "");
+                        setPincodeInput(val);
+                        if (pincodeError) setPincodeError(null);
+                      }}
+                      placeholder="Enter 6-digit PIN (e.g. 682001)"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-normal outline-none focus:border-pp-primary focus:bg-white focus:ring-2 focus:ring-pp-primary/20 transition-all tracking-wider"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isCheckingPincode || pincodeInput.length !== 6}
+                    className="flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-900 text-white font-black text-xs hover:bg-pp-primary disabled:opacity-50 disabled:hover:bg-slate-900 transition-colors shadow-xs shrink-0 cursor-pointer"
+                  >
+                    {isCheckingPincode ? (
+                      <LuLoaderCircle className="w-4 h-4 animate-spin text-white" />
+                    ) : (
+                      "Check"
+                    )}
+                  </button>
+                </form>
+
+                {pincodeError && (
+                  <p className="text-xs font-semibold text-red-600 flex items-center gap-1">
+                    <span>⚠</span> {pincodeError}
+                  </p>
+                )}
+
+                {pincodeResult && !pincodeError && (
+                  <div className={`rounded-xl p-3 text-xs space-y-2 border transition-all ${
+                    pincodeResult.serviceable
+                      ? "bg-slate-50/80 border-slate-200/80"
+                      : "bg-red-50 border-red-200 text-red-700"
+                  }`}>
+                    {pincodeResult.serviceable ? (
+                      <>
+                        <div className="flex items-center justify-between text-slate-800 font-bold border-b border-slate-200/60 pb-2">
+                          <span className="flex items-center gap-1.5 text-emerald-700 font-black">
+                            <LuCheck className="w-4 h-4 text-emerald-600" />
+                            Delivery Available
+                          </span>
+                          <span className="text-[11px] text-slate-500 font-medium">
+                            {pincodeResult.city || pincodeResult.district ? `${pincodeResult.city || pincodeResult.district}, ` : ""}{pincodeResult.state || ""}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+                          <div className="flex items-center gap-1.5 text-slate-700 font-medium">
+                            <LuTruck className="w-4 h-4 text-pp-primary shrink-0" />
+                            <span>Estimated: <strong>{pincodeResult.estimatedDays || 3} - {(pincodeResult.estimatedDays || 3) + 2} Days</strong></span>
+                          </div>
+                          <div className="flex items-center gap-1.5 font-medium">
+                            <LuBanknote className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <span>COD: <strong className={pincodeResult.codAvailable ? "text-emerald-700" : "text-amber-700"}>
+                              {pincodeResult.codAvailable ? "Available" : "Prepaid Only"}
+                            </strong></span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold">✗</span>
+                        <span>{pincodeResult.message || "Delivery is currently not available for this pincode."}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Customization Details or Personalized Callout */}

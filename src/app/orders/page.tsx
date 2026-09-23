@@ -49,7 +49,7 @@ type Order = {
 // ── Tab definitions ────────────────────────────────────────────────────────────
 const TABS = [
   { key: "all",          label: "Orders",           statuses: [] },          // empty = show all
-  { key: "not_shipped",  label: "Not Yet Shipped",  statuses: ["pending", "processing", "confirmed"] },
+  { key: "not_shipped",  label: "Not Yet Shipped",  statuses: ["pending", "accepted", "processing", "confirmed", "packed", "dispatch"] },
   { key: "delivered",    label: "Delivered",        statuses: ["delivered"] },
   { key: "cancelled",    label: "Cancelled",        statuses: ["cancelled"] },
   { key: "buy_again",    label: "Buy Again",        statuses: ["delivered"] }, // same data as delivered
@@ -319,7 +319,8 @@ export default function MyOrdersPage() {
               const statusLower = order.status.toLowerCase();
               const isDelivered = statusLower === "delivered";
               const isCancelled = statusLower === "cancelled";
-              const canCancel = ["pending", "processing", "confirmed"].includes(statusLower);
+              const isAccepted = statusLower === "accepted";
+              const canCancel = ["pending", "scheduled"].includes(statusLower);
 
               return (
                 <div
@@ -393,24 +394,30 @@ export default function MyOrdersPage() {
                             <LuCircleCheck className="h-5 w-5 text-green-500 shrink-0" />
                           ) : isCancelled ? (
                             <LuCircleX className="h-5 w-5 text-red-500 shrink-0" />
+                          ) : isAccepted ? (
+                            <LuCircleCheck className="h-5 w-5 text-indigo-600 shrink-0" />
                           ) : (
                             <LuClock className="h-5 w-5 text-pp-primary shrink-0" />
                           )}
                           <h3 className={`text-base font-black tracking-tight ${
                             isDelivered ? "text-green-700"
                             : isCancelled ? "text-red-600"
+                            : isAccepted ? "text-indigo-700"
                             : "text-slate-900"
                           }`}>
                             {isDelivered
                               ? "✓ Delivered"
                               : isCancelled
                               ? "Order Cancelled"
+                              : isAccepted
+                              ? "✓ Order Accepted by Vendor"
                               : `Arriving soon — Status: ${order.status.charAt(0).toUpperCase() + order.status.slice(1)}`}
                           </h3>
                           {/* Status badge */}
                           <span className={`ml-auto rounded-lg px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.14em] ${
                             isDelivered ? "bg-green-50 text-green-700"
                             : isCancelled ? "bg-red-50 text-red-600"
+                            : isAccepted ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
                             : "bg-[#edf4ff] text-pp-primary"
                           }`}>
                             {order.status}

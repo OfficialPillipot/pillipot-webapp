@@ -707,3 +707,48 @@ export async function registerVendor(data: any): Promise<{ message: string; vend
 
   return res.json();
 }
+
+export interface PincodeServiceabilityResponse {
+  pincode: string;
+  serviceable: boolean;
+  city?: string;
+  district?: string;
+  state?: string;
+  stateCode?: string;
+  codAvailable: boolean;
+  prepaidAvailable: boolean;
+  pickupAvailable?: boolean;
+  isOda?: boolean;
+  estimatedDays?: number;
+  message?: string;
+  mode: "live" | "fallback";
+}
+
+export async function checkPincodeServiceability(pincode: string): Promise<PincodeServiceabilityResponse> {
+  const cleanPin = String(pincode || "").trim();
+  try {
+    const res = await fetch(`${API_URL}/deliveries/serviceability/${cleanPin}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return {
+        pincode: cleanPin,
+        serviceable: true,
+        codAvailable: true,
+        prepaidAvailable: true,
+        message: "Delivery available to your location",
+        mode: "fallback",
+      };
+    }
+    return await res.json();
+  } catch {
+    return {
+      pincode: cleanPin,
+      serviceable: true,
+      codAvailable: true,
+      prepaidAvailable: true,
+      message: "Delivery available",
+      mode: "fallback",
+    };
+  }
+}

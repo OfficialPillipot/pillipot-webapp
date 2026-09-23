@@ -92,7 +92,8 @@ export default function OrderDetailsPage() {
       case "cancelled": return { label: "Cancelled", icon: <LuCircleX className="w-6 h-6 text-pp-accent" />, color: "text-pp-accent" };
       case "dispatch": return { label: "Dispatched", icon: <LuTruck className="w-6 h-6 text-pp-accent-warm" />, color: "text-pp-accent-warm" };
       case "packed": return { label: "Packed", icon: <LuPackage className="w-6 h-6 text-pp-cyan" />, color: "text-pp-cyan" };
-      default: return { label: "Pending", icon: <LuClock className="w-6 h-6 text-pp-primary" />, color: "text-pp-primary" };
+      case "accepted": return { label: "Accepted by Vendor", icon: <LuCircleCheck className="w-6 h-6 text-indigo-600" />, color: "text-indigo-600" };
+      default: return { label: "Pending Vendor Acceptance", icon: <LuClock className="w-6 h-6 text-pp-primary" />, color: "text-pp-primary" };
     }
   };
 
@@ -155,16 +156,23 @@ export default function OrderDetailsPage() {
                     style={{ width: `calc((100% - 8% - 32px) * ${order.currentStep / Math.max(order.statusSteps.length - 1, 1)})` }}
                   />
                   <div className="flex justify-between relative z-10">
-                    {order.statusSteps.map((step: string, idx: number) => (
-                      <div key={step} className="flex flex-col items-center gap-2" style={{ width: `${100 / order.statusSteps.length}%` }}>
-                        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-4 ${idx <= order.currentStep ? "bg-pp-primary border-pp-primary-light text-white" : "bg-white border-gray-50 text-gray-300"}`}>
-                          {idx < order.currentStep ? <LuCircleCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-current" />}
+                    {order.statusSteps.map((step: string, idx: number) => {
+                      const stepLabel = 
+                        step.toLowerCase() === "accepted" ? "Accepted" :
+                        step.toLowerCase() === "pending" ? "Pending" :
+                        step.toLowerCase() === "dispatch" ? "Dispatched" :
+                        step.charAt(0).toUpperCase() + step.slice(1);
+                      return (
+                        <div key={step} className="flex flex-col items-center gap-2" style={{ width: `${100 / order.statusSteps.length}%` }}>
+                          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-4 ${idx <= order.currentStep ? "bg-pp-primary border-pp-primary-light text-white" : "bg-white border-gray-50 text-gray-300"}`}>
+                            {idx < order.currentStep ? <LuCircleCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-current" />}
+                          </div>
+                          <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-wide text-center leading-tight break-words w-full ${idx <= order.currentStep ? "text-pp-primary" : "text-gray-300"}`}>
+                            {stepLabel}
+                          </span>
                         </div>
-                        <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-wide text-center leading-tight break-words w-full ${idx <= order.currentStep ? "text-pp-primary" : "text-gray-300"}`}>
-                          {step}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                </div>
             </div>
