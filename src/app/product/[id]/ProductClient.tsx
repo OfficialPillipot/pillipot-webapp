@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useRef, useLayoutEffect, useEffect } from "react";
+import { useState, useRef, useLayoutEffect, useEffect, useMemo, useCallback } from "react";
 import { type Product } from "@/lib/api";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  LuStar, 
-  LuShoppingCart, 
-  LuZap, 
-  LuTag, 
-  LuTruck, 
-  LuRotateCcw, 
-  LuHeart, 
-  LuX, 
-  LuChevronLeft, 
-  LuChevronRight, 
-  LuPlay, 
-  LuCalendarDays, 
-  LuClock, 
+import {
+  LuStar,
+  LuShoppingCart,
+  LuZap,
+  LuTag,
+  LuTruck,
+  LuRotateCcw,
+  LuHeart,
+  LuX,
+  LuChevronLeft,
+  LuChevronRight,
+  LuPlay,
+  LuCalendarDays,
+  LuClock,
   LuCheck,
   LuSparkles,
   LuPencil,
@@ -26,7 +26,8 @@ import {
   LuType,
   LuMapPin,
   LuLoaderCircle,
-  LuBanknote
+  LuBanknote,
+  LuUpload,
 } from "react-icons/lu";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -36,7 +37,7 @@ import { useToast } from "@/context/ToastContext";
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
-import { getProductOffers, getProductReviews, checkPincodeServiceability, type PincodeServiceabilityResponse } from "@/lib/api";
+import { getProductOffers, getProductReviews, checkPincodeServiceability, uploadCustomPhotoApi, type PincodeServiceabilityResponse } from "@/lib/api";
 import { cleanQuillHtml } from "@/lib/htmlUtils";
 
 export default function ProductClient({ product }: { product: Product }) {
@@ -45,11 +46,21 @@ export default function ProductClient({ product }: { product: Product }) {
   const isInCart = cart.some(item => item.id === product.id);
   const { toggleWishlist, isInWishlist } = useWishlist();
   const { user, setIsLoginModalOpen } = useAuth();
-  const { success } = useToast();
+  const { success, error } = useToast();
   const isOutOfStock = product.stockQuantity <= 0;
 
   // Preparation days specified by seller (defaults to 2 if not set)
   const prepDays = Math.max(0, product.preparationDays !== undefined && product.preparationDays !== null ? Number(product.preparationDays) : 2);
+
+  // Pincode Serviceability State
+  const [pincodeInput, setPincodeInput] = useState<string>("");
+  const [isCheckingPincode, setIsCheckingPincode] = useState(false);
+  const [pincodeResult, setPincodeResult] = useState<PincodeServiceabilityResponse | null>(null);
+  const [pincodeError, setPincodeError] = useState<string | null>(null);
+
+  // Delivery transit time in days from Delhivery API (standard courier transit is 3 days until live check)
+  const deliveryDays = Number(pincodeResult?.tat || 3);
+  const totalLeadDays = prepDays + deliveryDays;
 
   const formatYmd = (d: Date) => {
     const year = d.getFullYear();
@@ -58,24 +69,37 @@ export default function ProductClient({ product }: { product: Product }) {
     return `${year}-${month}-${day}`;
   };
 
-  const getMinDeliveryDate = () => {
+  // Earliest exact delivery date: Order Date (Today) + Preparation Days + Delhivery Delivery Days
+  const getMinDeliveryDate = useCallback(() => {
+    // If Delhivery API returned expectedDeliveryDate (calculated as order date + prepDays + Delhivery TAT)
+    if (pincodeResult?.expectedDeliveryDate && /^\d{4}-\d{2}-\d{2}$/.test(pincodeResult.expectedDeliveryDate)) {
+      const [y, m, d] = pincodeResult.expectedDeliveryDate.split("-").map(Number);
+      if (y && m && d) return new Date(y, m - 1, d);
+    }
+
+    // Default exact delivery date calculation: Today + prepDays + deliveryDays
     const d = new Date();
-    d.setDate(d.getDate() + prepDays);
+    d.setDate(d.getDate() + prepDays + deliveryDays);
     return d;
-  };
+  }, [pincodeResult?.expectedDeliveryDate, prepDays, deliveryDays]);
 
-  const minDateStr = formatYmd(getMinDeliveryDate());
+  const minDateStr = useMemo(() => formatYmd(getMinDeliveryDate()), [getMinDeliveryDate]);
 
-  const getMaxDeliveryDate = () => {
-    const d = new Date();
-    d.setDate(d.getDate() + prepDays + 90);
+  const getMaxDeliveryDate = useCallback(() => {
+    const d = getMinDeliveryDate();
+    d.setDate(d.getDate() + 90);
     return d;
-  };
+  }, [getMinDeliveryDate]);
 
-  const maxDateStr = formatYmd(getMaxDeliveryDate());
+  const maxDateStr = useMemo(() => formatYmd(getMaxDeliveryDate()), [getMaxDeliveryDate]);
 
   const [selectedDeliveryDate, setSelectedDeliveryDate] = useState<string>(minDateStr);
   const datePickerRef = useRef<HTMLDivElement>(null);
+
+  // Keep selected delivery date in sync whenever earliest delivery date updates (e.g. after Delhivery API response)
+  useEffect(() => {
+    setSelectedDeliveryDate((prev) => (!prev || prev < minDateStr ? minDateStr : prev));
+  }, [minDateStr]);
 
   const formatDeliveryDisplay = (ymd: string) => {
     if (!ymd) return "";
@@ -98,23 +122,19 @@ export default function ProductClient({ product }: { product: Product }) {
     setSelectedDeliveryDate(val);
   };
 
-  // Generate 3 quick date options starting from minDate
-  const quickDateOptions = [0, 1, 2].map((offset) => {
-    const d = new Date();
-    d.setDate(d.getDate() + prepDays + offset);
-    const ymd = formatYmd(d);
-    return {
-      ymd,
-      isEarliest: offset === 0,
-      label: offset === 0 ? `Earliest: ${formatDeliveryDisplay(ymd)}` : formatDeliveryDisplay(ymd),
-    };
-  });
-
-  // Pincode Serviceability State
-  const [pincodeInput, setPincodeInput] = useState<string>("");
-  const [isCheckingPincode, setIsCheckingPincode] = useState(false);
-  const [pincodeResult, setPincodeResult] = useState<PincodeServiceabilityResponse | null>(null);
-  const [pincodeError, setPincodeError] = useState<string | null>(null);
+  // Generate 3 quick date options starting from earliest delivery date
+  const quickDateOptions = useMemo(() => {
+    return [0, 1, 2].map((offset) => {
+      const d = getMinDeliveryDate();
+      d.setDate(d.getDate() + offset);
+      const ymd = formatYmd(d);
+      return {
+        ymd,
+        isEarliest: offset === 0,
+        label: offset === 0 ? `Earliest: ${formatDeliveryDisplay(ymd)}` : formatDeliveryDisplay(ymd),
+      };
+    });
+  }, [getMinDeliveryDate]);
 
   useEffect(() => {
     try {
@@ -123,7 +143,51 @@ export default function ProductClient({ product }: { product: Product }) {
         setPincodeInput(savedPin);
         void checkPincodeServiceability(savedPin, product.id).then(res => setPincodeResult(res));
       }
-    } catch {}
+    } catch { }
+  }, [product.id]);
+
+  // Global Header Pincode Sync: Auto-populate and auto-search on mount / product open
+  useEffect(() => {
+    try {
+      const globalPin = localStorage.getItem("global_delivery_pincode");
+      if (globalPin && /^\d{6}$/.test(globalPin.trim())) {
+        const clean = globalPin.trim();
+        setPincodeInput(clean);
+        setIsCheckingPincode(true);
+        checkPincodeServiceability(clean, product.id)
+          .then((res) => {
+            setPincodeResult(res);
+            setPincodeError(null);
+          })
+          .catch(() => { })
+          .finally(() => {
+            setIsCheckingPincode(false);
+          });
+      }
+    } catch { }
+  }, [product.id]);
+
+  // Listen to live global pincode changes from header
+  useEffect(() => {
+    const handleGlobalPinChange = (e: any) => {
+      const pin = e.detail?.pincode;
+      if (pin && /^\d{6}$/.test(pin)) {
+        setPincodeInput(pin);
+        setIsCheckingPincode(true);
+        checkPincodeServiceability(pin, product.id)
+          .then((res) => {
+            setPincodeResult(res);
+            setPincodeError(null);
+          })
+          .catch(() => { })
+          .finally(() => {
+            setIsCheckingPincode(false);
+          });
+      }
+    };
+
+    window.addEventListener("global_pincode_changed", handleGlobalPinChange);
+    return () => window.removeEventListener("global_pincode_changed", handleGlobalPinChange);
   }, [product.id]);
 
   const handlePincodeCheck = async (e?: React.FormEvent) => {
@@ -139,9 +203,7 @@ export default function ProductClient({ product }: { product: Product }) {
     try {
       const res = await checkPincodeServiceability(clean, product.id);
       setPincodeResult(res);
-      try {
-        localStorage.setItem("customer_delivery_pincode", clean);
-      } catch {}
+      // NOTE: Do NOT alter global_delivery_pincode here, so editing another pincode on product page does not change the header PIN
     } catch {
       setPincodeError("Failed to check delivery serviceability. Please try again.");
     } finally {
@@ -166,9 +228,10 @@ export default function ProductClient({ product }: { product: Product }) {
   }, [product.id, prepDays]);
 
   useLayoutEffect(() => {
-    if (descRef.current) {
+    const el = descRef.current || (typeof document !== "undefined" ? document.querySelector<HTMLDivElement>(".product-description-content") : null);
+    if (el) {
       // Compare scrollHeight against clientHeight when collapsed to determine if content overflows
-      const overflow = descRef.current.scrollHeight > descRef.current.clientHeight + 4;
+      const overflow = el.scrollHeight > el.clientHeight + 4;
       setCanExpandDesc(overflow);
     }
   }, [cleanedDescription]);
@@ -214,50 +277,136 @@ export default function ProductClient({ product }: { product: Product }) {
     allImages.push(`data:image/svg+xml;base64,${btoa('<svg width="800" height="800" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="800" height="800" fill="#F3F4FB"/><path d="M400 330V470M330 400H470" stroke="#D1D5DB" stroke-width="4" stroke-linecap="round"/><circle cx="400" cy="400" r="100" stroke="#D1D5DB" stroke-width="4" stroke-dasharray="8 8"/><text x="400" y="550" text-anchor="middle" fill="#9CA3AF" font-family="sans-serif" font-size="20" font-weight="600" letter-spacing="0.1em">NO IMAGE AVAILABLE</text></svg>')}`);
   }
 
-  const isCustomizable = !!(product.allowPhotoUpload || product.allowTextInput);
-  const [savedCustomization, setSavedCustomization] = useState<{
-    customText?: string;
-    customPhotoUrl?: string;
-    customNote?: string;
-  } | null>(null);
+  const allowPhoto = product.allowPhotoUpload === true || String(product.allowPhotoUpload) === "true";
+  const allowText = product.allowTextInput === true || String(product.allowTextInput) === "true";
+  const isCustomizable = !!(allowPhoto || allowText);
+  const promptText = product.customTextPrompt || "Enter custom text (name, quote, or message)";
+  const maxTextLimit = product.customTextLimit || 50;
+
+  const [customText, setCustomText] = useState("");
+  const [customPhotoUrl, setCustomPhotoUrl] = useState("");
+  const [customNote, setCustomNote] = useState("");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [customizationError, setCustomizationError] = useState<string | null>(null);
+  const customizationSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!isCustomizable) {
+      setCustomText("");
+      setCustomPhotoUrl("");
+      setCustomNote("");
+      try {
+        localStorage.removeItem(`pillipot_customization_${product.id}`);
+      } catch { }
+      return;
+    }
     try {
       const raw = localStorage.getItem(`pillipot_customization_${product.id}`);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (parsed.customText || parsed.customPhotoUrl || parsed.customNote) {
-          setSavedCustomization(parsed);
-        } else {
-          setSavedCustomization(null);
-        }
-      } else {
-        setSavedCustomization(null);
+        if (parsed.customText) setCustomText(parsed.customText);
+        if (parsed.customPhotoUrl) setCustomPhotoUrl(parsed.customPhotoUrl);
+        if (parsed.customNote) setCustomNote(parsed.customNote);
       }
-    } catch {
-      setSavedCustomization(null);
+    } catch { }
+  }, [product.id, isCustomizable]);
+
+  const saveCustomization = (text: string, photoUrl: string, note: string) => {
+    try {
+      if (text.trim() || photoUrl || note.trim()) {
+        localStorage.setItem(`pillipot_customization_${product.id}`, JSON.stringify({
+          productId: product.id,
+          customText: text.trim() || undefined,
+          customPhotoUrl: photoUrl || undefined,
+          customNote: note.trim() || undefined,
+          updatedAt: new Date().toISOString(),
+        }));
+      } else {
+        localStorage.removeItem(`pillipot_customization_${product.id}`);
+      }
+    } catch { }
+  };
+
+  const handleTextChange = (val: string) => {
+    setCustomText(val);
+    if (customizationError) setCustomizationError(null);
+    saveCustomization(val, customPhotoUrl, customNote);
+  };
+
+  const handleNoteChange = (val: string) => {
+    setCustomNote(val);
+    saveCustomization(customText, customPhotoUrl, val);
+  };
+
+  const handlePhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      error("Photo size must be less than 10MB");
+      return;
     }
-  }, [product.id]);
+
+    setUploadingPhoto(true);
+    setCustomizationError(null);
+    try {
+      const res = await uploadCustomPhotoApi(file);
+      setCustomPhotoUrl(res.url);
+      saveCustomization(customText, res.url, customNote);
+      success("Photo uploaded successfully!");
+    } catch (err: any) {
+      error(err.message || "Failed to upload photo");
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setCustomPhotoUrl("");
+    saveCustomization(customText, "", customNote);
+    success("Photo removed");
+  };
 
   const hasCustomization = !!(
-    savedCustomization?.customText || 
-    savedCustomization?.customPhotoUrl || 
-    savedCustomization?.customNote
+    (allowText ? customText.trim() : true) &&
+    (allowPhoto ? customPhotoUrl : true) &&
+    (customText.trim() || customPhotoUrl)
   );
 
-  const handleRemoveCustomization = () => {
-    try {
-      localStorage.removeItem(`pillipot_customization_${product.id}`);
-    } catch {}
-    setSavedCustomization(null);
-    success("Customization removed");
+  const isPersonalizationComplete = useMemo(() => {
+    if (!isCustomizable) return true;
+    if (allowText && !customText.trim()) return false;
+    if (allowPhoto && !customPhotoUrl) return false;
+    return true;
+  }, [isCustomizable, allowText, allowPhoto, customText, customPhotoUrl]);
+
+  const validateCustomization = (): boolean => {
+    if (!isCustomizable) return true;
+    if (uploadingPhoto) {
+      error("Please wait for photo upload to finish.");
+      return false;
+    }
+    if (allowText && !customText.trim()) {
+      const msg = `Please enter ${product.customTextPrompt || "custom text"}.`;
+      setCustomizationError(msg);
+      error(msg);
+      customizationSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return false;
+    }
+    if (allowPhoto && !customPhotoUrl) {
+      const msg = "Please upload an image for your customization.";
+      setCustomizationError(msg);
+      error(msg);
+      customizationSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return false;
+    }
+    setCustomizationError(null);
+    return true;
   };
 
   const handleAddToCart = () => {
-    if (isCustomizable && !hasCustomization) {
-      router.push(`/product/${product.id}/personalize`);
-      return;
-    }
+    if (!validateCustomization()) return;
     if (isInCart) {
       router.push("/cart");
       return;
@@ -270,16 +419,13 @@ export default function ProductClient({ product }: { product: Product }) {
       product,
       1,
       selectedDeliveryDate,
-      savedCustomization?.customText,
-      savedCustomization?.customPhotoUrl
+      isCustomizable && customText.trim() ? customText.trim() : undefined,
+      isCustomizable && customPhotoUrl ? customPhotoUrl : undefined
     );
   };
 
   const handleBuyNow = () => {
-    if (isCustomizable && !hasCustomization) {
-      router.push(`/product/${product.id}/personalize`);
-      return;
-    }
+    if (!validateCustomization()) return;
     if (!user) {
       setIsLoginModalOpen(true);
       return;
@@ -289,14 +435,14 @@ export default function ProductClient({ product }: { product: Product }) {
       qty: "1",
       deliveryDate: selectedDeliveryDate,
     });
-    if (savedCustomization?.customText) {
-      params.append("customText", savedCustomization.customText);
+    if (isCustomizable && customText.trim()) {
+      params.append("customText", customText.trim());
     }
-    if (savedCustomization?.customPhotoUrl) {
-      params.append("customPhotoUrl", savedCustomization.customPhotoUrl);
+    if (isCustomizable && customPhotoUrl) {
+      params.append("customPhotoUrl", customPhotoUrl);
     }
-    if (savedCustomization?.customNote) {
-      params.append("customNote", savedCustomization.customNote);
+    if (isCustomizable && customNote.trim()) {
+      params.append("customNote", customNote.trim());
     }
     router.push(`/checkout?${params.toString()}`);
   };
@@ -317,6 +463,108 @@ export default function ProductClient({ product }: { product: Product }) {
 
   const { data: offers = [] } = useSWR(swrKeys.productOffers(product.id), () => getProductOffers(product.id));
   const { data: reviews = [] } = useSWR(swrKeys.productReviews(product.id), () => getProductReviews(product.id));
+
+  const renderDescription = (isMobile = false) => (
+    <div className="bg-white rounded-[2rem] border border-slate-100 p-6 sm:p-8 shadow-sm">
+      <h3 className="text-xl font-black text-slate-950 mb-4">Product Description</h3>
+      <div className="text-sm leading-6 text-slate-600">
+        {cleanedDescription ? (
+          <>
+            <div
+              ref={isMobile ? undefined : descRef}
+              className={`product-description-content ${isDescExpanded ? "" : "max-h-[9rem] overflow-hidden relative"
+                }`}
+              dangerouslySetInnerHTML={{ __html: cleanedDescription }}
+            />
+            {canExpandDesc && (
+              <button
+                onClick={() => setIsDescExpanded(!isDescExpanded)}
+                className="mt-3 font-bold text-pp-primary hover:underline focus:outline-none text-xs flex items-center gap-1"
+              >
+                {isDescExpanded ? "See Less" : "See More"}
+              </button>
+            )}
+          </>
+        ) : (
+          <p className="text-slate-400 italic">No description available.</p>
+        )}
+      </div>
+
+      {product.videoUrl && (
+        <div className="mt-6">
+          <h4 className="flex items-center gap-2 text-sm font-black text-slate-700 mb-3">
+            <LuPlay className="w-4 h-4 text-pp-primary" /> Product Video
+          </h4>
+          <div className="relative aspect-video overflow-hidden rounded-2xl bg-black/5">
+            <video controls className="w-full h-full">
+              <source src={product.videoUrl} />
+            </video>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderReviews = () => (
+    <div className="bg-white rounded-[2rem] border border-slate-100 p-6 sm:p-8 shadow-sm flex flex-col">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-xl font-black text-slate-950">Customer Reviews</h3>
+        {reviews.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-black text-pp-primary">{product.rating || 0}</span>
+            <div className="flex gap-0.5">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <LuStar key={s} className={`w-3.5 h-3.5 ${s <= (product.rating || 0) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {reviews.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
+          <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">No Reviews Yet</p>
+          <p className="text-xs text-slate-300 mt-2">Be the first to review this product after purchase!</p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1 no-scrollbar">
+            {reviews.slice(0, visibleReviewsCount).map((review) => {
+              const initial = review.customer?.customerName?.charAt(0).toUpperCase() || "?";
+              return (
+                <div key={review.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-full bg-pp-primary/10 flex items-center justify-center text-pp-primary font-black text-sm shrink-0">
+                        {initial}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-900 text-sm leading-none">{review.customer?.customerName || "Anonymous"}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{new Date(review.createdAt).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 bg-amber-50 border border-amber-100 px-2 py-1 rounded-lg shrink-0">
+                      <span className="text-xs font-bold text-amber-700">{review.rating}</span>
+                      <LuStar className="w-3 h-3 fill-amber-400 text-amber-400" />
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 italic leading-relaxed">&ldquo;{review.comment}&rdquo;</p>
+                </div>
+              );
+            })}
+          </div>
+          {reviews.length > visibleReviewsCount && (
+            <button
+              onClick={() => setVisibleReviewsCount((prev) => prev + 5)}
+              className="w-full py-3 mt-4 text-pp-primary font-bold hover:bg-pp-primary/5 rounded-xl transition-colors text-sm"
+            >
+              Load More Reviews ({reviews.length - visibleReviewsCount}+)
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -342,65 +590,72 @@ export default function ProductClient({ product }: { product: Product }) {
           </div>
 
           {/* Product Hero Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mb-8">
 
-            {/* Left: Gallery */}
-            <div className="lg:col-span-6 flex flex-col sm:flex-row gap-3">
-              {/* Thumbnail strip */}
-              <div className="flex flex-row sm:flex-col gap-2 order-2 sm:order-1 overflow-x-auto sm:overflow-y-auto no-scrollbar sm:max-h-[480px]">
-                {allImages.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setSelectedIndex(i)}
-                    className={`relative w-[72px] h-[72px] shrink-0 rounded-xl overflow-hidden border-2 transition-all bg-white ${
-                      selectedIndex === i
+            {/* Left: Gallery, Description & Reviews */}
+            <div className="lg:col-span-6 flex flex-col gap-6">
+              {/* Thumbnail strip & Main image */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                {/* Thumbnail strip */}
+                <div className="flex flex-row sm:flex-col gap-2 order-2 sm:order-1 overflow-x-auto sm:overflow-y-auto no-scrollbar sm:max-h-[480px]">
+                  {allImages.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setSelectedIndex(i)}
+                      className={`relative w-[72px] h-[72px] shrink-0 rounded-xl overflow-hidden border-2 transition-all bg-white ${selectedIndex === i
                         ? "border-pp-primary shadow-md ring-2 ring-pp-primary/20 ring-offset-1"
                         : "border-slate-200 hover:border-pp-primary/50"
-                    }`}
+                        }`}
+                    >
+                      <Image src={img} alt={`${product.name} view ${i + 1}`} fill sizes="72px" className="object-cover" />
+                    </button>
+                  ))}
+                </div>
+
+                {/* Main image */}
+                <div
+                  ref={imageRef}
+                  className="relative flex-1 aspect-square max-h-[380px] sm:max-h-[420px] rounded-[2rem] overflow-hidden bg-slate-100 cursor-zoom-in order-1 sm:order-2 group shadow-[0_10px_40px_-10px_rgba(43,127,255,0.15)]"
+                  onMouseEnter={() => setIsHoverZoom(true)}
+                  onMouseLeave={() => setIsHoverZoom(false)}
+                  onMouseMove={handleMouseMove}
+                  onClick={() => setZoomOpen(true)}
+                  onTouchStart={onTouchStart}
+                  onTouchMove={onTouchMove}
+                  onTouchEnd={onTouchEnd}
+                >
+                  <Image
+                    src={allImages[selectedIndex]}
+                    alt={product.name}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className={`object-cover transition-transform duration-500 ${isHoverZoom ? "scale-110" : "scale-100 group-hover:scale-105"}`}
+                    style={isHoverZoom ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
+                    priority
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!user) { setIsLoginModalOpen(true); return; }
+                      toggleWishlist(product);
+                    }}
+                    className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-white/60 transition-all hover:scale-110 ${isInWishlist(product.id) ? "text-red-500" : "text-slate-300 hover:text-red-400"
+                      }`}
                   >
-                    <Image src={img} alt={`${product.name} view ${i + 1}`} fill sizes="72px" className="object-cover" />
+                    <LuHeart className={`w-5 h-5 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
                   </button>
-                ))}
+                </div>
               </div>
 
-              {/* Main image */}
-              <div
-                ref={imageRef}
-                className="relative flex-1 aspect-square max-h-[380px] sm:max-h-[420px] rounded-[2rem] overflow-hidden bg-slate-100 cursor-zoom-in order-1 sm:order-2 group shadow-[0_10px_40px_-10px_rgba(43,127,255,0.15)]"
-                onMouseEnter={() => setIsHoverZoom(true)}
-                onMouseLeave={() => setIsHoverZoom(false)}
-                onMouseMove={handleMouseMove}
-                onClick={() => setZoomOpen(true)}
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              >
-                <Image
-                  src={allImages[selectedIndex]}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className={`object-cover transition-transform duration-500 ${isHoverZoom ? "scale-110" : "scale-100 group-hover:scale-105"}`}
-                  style={isHoverZoom ? { transformOrigin: `${zoomPos.x}% ${zoomPos.y}%` } : {}}
-                  priority
-                />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (!user) { setIsLoginModalOpen(true); return; }
-                    toggleWishlist(product);
-                  }}
-                  className={`absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-md border border-white/60 transition-all hover:scale-110 ${
-                    isInWishlist(product.id) ? "text-red-500" : "text-slate-300 hover:text-red-400"
-                  }`}
-                >
-                  <LuHeart className={`w-5 h-5 ${isInWishlist(product.id) ? "fill-current" : ""}`} />
-                </button>
+              {/* Desktop: Product Description & Customer Reviews under image */}
+              <div className="hidden lg:flex flex-col gap-6">
+                {renderDescription(false)}
+                {renderReviews()}
               </div>
             </div>
 
             {/* Right: Product Details */}
-            <div className="lg:col-span-6 flex flex-col justify-center gap-5">
+            <div className="lg:col-span-6 flex flex-col gap-5 relative pb-4">
 
               {/* Brand & Title */}
               <div>
@@ -408,9 +663,8 @@ export default function ProductClient({ product }: { product: Product }) {
                 <div>
                   <h1
                     ref={titleRef}
-                    className={`text-lg sm:text-2xl font-bold leading-snug text-slate-950 transition-all ${
-                      isTitleExpanded ? "" : "line-clamp-2"
-                    }`}
+                    className={`text-lg sm:text-2xl font-bold leading-snug text-slate-950 transition-all ${isTitleExpanded ? "" : "line-clamp-2"
+                      }`}
                   >
                     {product.name}
                   </h1>
@@ -503,7 +757,7 @@ export default function ProductClient({ product }: { product: Product }) {
                   <span className="text-[10px] font-bold text-slate-700">3 Day Returns</span>
                   <span className="text-[9px] text-slate-400 leading-tight">Hassle-free swap</span>
                 </div>
-                <button 
+                <button
                   type="button"
                   onClick={() => datePickerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })}
                   className="flex flex-col items-center gap-1 rounded-xl border border-pp-primary/20 bg-pp-primary/5 p-3 text-center shadow-sm hover:border-pp-primary/40 hover:bg-pp-primary/10 transition-all cursor-pointer group"
@@ -516,94 +770,6 @@ export default function ProductClient({ product }: { product: Product }) {
                 </button>
               </div>
 
-              {/* Delivery Date Picker Section */}
-              <div 
-                ref={datePickerRef}
-                className="rounded-2xl border border-pp-primary/20 bg-gradient-to-br from-white via-white to-pp-primary/5 p-4 sm:p-5 shadow-sm space-y-3.5 transition-all"
-              >
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pp-primary/10 text-pp-primary shadow-sm">
-                      <LuCalendarDays className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight">
-                        Select Preferred Delivery Date
-                      </h3>
-                      <p className="text-[11px] text-slate-500 font-medium">Choose when you would like to receive this order</p>
-                    </div>
-                  </div>
-
-                  {prepDays > 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-[10px] font-bold text-amber-800 shadow-sm">
-                      <LuClock className="h-3 w-3" />
-                      {prepDays} day{prepDays === 1 ? "" : "s"} preparation
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[10px] font-bold text-emerald-800 shadow-sm">
-                      <LuCheck className="h-3 w-3" />
-                      Ready to ship
-                    </span>
-                  )}
-                </div>
-
-                {/* Quick Date Chips */}
-                <div className="space-y-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Quick options</span>
-                  <div className="grid grid-cols-3 gap-2">
-                    {quickDateOptions.map((opt, idx) => {
-                      const isSelected = selectedDeliveryDate === opt.ymd;
-                      return (
-                        <button
-                          key={opt.ymd}
-                          type="button"
-                          onClick={() => setSelectedDeliveryDate(opt.ymd)}
-                          className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all ${
-                            isSelected
-                              ? "border-pp-primary bg-pp-primary text-white shadow-md shadow-pp-primary/25 scale-[1.02]"
-                              : "border-slate-200 bg-white text-slate-700 hover:border-pp-primary/30 hover:bg-slate-50"
-                          }`}
-                        >
-                          <span className={`text-[10px] font-black uppercase tracking-wider ${isSelected ? "text-white/80" : "text-pp-primary"}`}>
-                            {opt.isEarliest ? "Earliest" : `+${idx} Day${idx > 1 ? "s" : ""}`}
-                          </span>
-                          <span className="text-xs sm:text-sm font-black mt-0.5">
-                            {formatDeliveryDisplay(opt.ymd)}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Custom Date Input */}
-                <div className="space-y-1 pt-1">
-                  <label className="block text-[11px] font-bold text-slate-600">
-                    Or pick another date:
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="date"
-                      min={minDateStr}
-                      max={maxDateStr}
-                      value={selectedDeliveryDate}
-                      onChange={(e) => handleDateChange(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-slate-800 shadow-sm focus:border-pp-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-pp-primary/20 transition-all cursor-pointer"
-                    />
-                  </div>
-                  <p className="text-[10px] text-slate-400 font-medium">
-                    * Dates before {formatDeliveryDisplay(minDateStr)} are disabled due to preparation days.
-                  </p>
-                </div>
-
-                {/* Selected Date Confirmation Banner */}
-                <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200/80 px-3.5 py-2 text-xs font-bold text-emerald-800">
-                  <LuCheck className="h-4 w-4 shrink-0 text-emerald-600" />
-                  <span>Delivery scheduled for <strong className="underline decoration-emerald-500/50 underline-offset-2">{formatDeliveryDisplay(selectedDeliveryDate || minDateStr)}</strong></span>
-                </div>
-              </div>
-
-              {/* Delhivery Pincode Serviceability Checker */}
               <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs space-y-3">
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2.5">
@@ -621,7 +787,7 @@ export default function ProductClient({ product }: { product: Product }) {
                   </div>
                   {pincodeResult?.serviceable && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
-                      ✓ Serviceable
+                      ✓ Delivery Available
                     </span>
                   )}
                 </div>
@@ -654,306 +820,338 @@ export default function ProductClient({ product }: { product: Product }) {
                   </button>
                 </form>
 
-                {pincodeError && (
-                  <p className="text-xs font-semibold text-red-600 flex items-center gap-1">
-                    <span>⚠</span> {pincodeError}
-                  </p>
-                )}
-
-                {pincodeResult && !pincodeError && (
-                  <div className={`rounded-xl p-3 text-xs space-y-2 border transition-all ${
-                    pincodeResult.serviceable
-                      ? "bg-slate-50/80 border-slate-200/80"
-                      : "bg-red-50 border-red-200 text-red-700"
-                  }`}>
-                    {pincodeResult.serviceable ? (
-                      <>
-                        <div className="flex items-center justify-between text-slate-800 font-bold border-b border-slate-200/60 pb-2">
-                          <span className="flex items-center gap-1.5 text-emerald-700 font-black">
-                            <LuCheck className="w-4 h-4 text-emerald-600" />
-                            Delivery Available
-                          </span>
-                          <span className="text-[11px] text-slate-500 font-medium">
-                            {pincodeResult.city || pincodeResult.district ? `${pincodeResult.city || pincodeResult.district}, ` : ""}{pincodeResult.state || ""}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
-                          <div className="flex items-center gap-1.5 text-slate-700 font-medium">
-                            <LuTruck className="w-4 h-4 text-pp-primary shrink-0" />
-                            <span>
-                              {pincodeResult.expectedDeliveryDate ? (
-                                <>
-                                  Delivery by <strong>{new Date(pincodeResult.expectedDeliveryDate).toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' })}</strong> ({pincodeResult.tat || pincodeResult.estimatedDays} Days)
-                                </>
-                              ) : (
-                                <>
-                                  Estimated: <strong>{pincodeResult.estimatedDays || 3} - {(pincodeResult.estimatedDays || 3) + 2} Days</strong>
-                                </>
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5 font-medium">
-                            <LuBanknote className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>COD: <strong className={pincodeResult.codAvailable ? "text-emerald-700" : "text-amber-700"}>
-                              {pincodeResult.codAvailable ? "Available" : "Prepaid Only"}
-                            </strong></span>
-                          </div>
-                        </div>
-                        {pincodeResult.originPin && (
-                          <div className="flex items-center justify-between pt-1.5 mt-1 border-t border-slate-200/60 text-[10px] text-slate-500">
-                            <span>Dispatched via Delhivery Surface (mot: S)</span>
-                            <span>Pickup PIN: <strong className="text-slate-700">{pincodeResult.originPin}</strong></span>
-                          </div>
-                        )}
-                      </>
+                {/* Status: Error on left or Location on right */}
+                {(pincodeError || (pincodeResult && !pincodeResult.serviceable) || (pincodeResult?.serviceable && (pincodeResult.city || pincodeResult.district || pincodeResult.state))) && (
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    {pincodeError ? (
+                      <p className="font-semibold text-red-600 flex items-center gap-1">
+                        <span>⚠</span> {pincodeError}
+                      </p>
+                    ) : pincodeResult && !pincodeResult.serviceable ? (
+                      <p className="font-semibold text-rose-600 flex items-center gap-1">
+                        <span>✗</span> {pincodeResult.message || "Delivery is currently not available for this pincode."}
+                      </p>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold">✗</span>
-                        <span>{pincodeResult.message || "Delivery is currently not available for this pincode."}</span>
-                      </div>
+                      <span />
+                    )}
+
+                    {pincodeResult?.serviceable && (pincodeResult.city || pincodeResult.district || pincodeResult.state) && (
+                      <p className="ml-auto text-[11px] font-semibold text-slate-600 flex items-center gap-1">
+                        <LuMapPin className="w-3.5 h-3.5 text-pp-primary" />
+                        <span>
+                          {pincodeResult.city || pincodeResult.district ? `${pincodeResult.city || pincodeResult.district}, ` : ""}
+                          {pincodeResult.state || ""}
+                        </span>
+                      </p>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* Customization Details or Personalized Callout */}
-              {isCustomizable && (
-                <div className="space-y-3">
-                  {hasCustomization ? (
-                    <div className="rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/60 p-4 sm:p-5 space-y-3 shadow-xs">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-lg bg-purple-600/10 flex items-center justify-center text-purple-600">
-                            <LuSparkles className="w-4 h-4" />
-                          </div>
-                          <span className="text-xs sm:text-sm font-black text-purple-950">
-                            Your Customization Details
+              {/* Delivery Date Picker Section */}
+              <div
+                ref={datePickerRef}
+                className="rounded-2xl border border-pp-primary/20 bg-gradient-to-br from-white via-white to-pp-primary/5 p-4 sm:p-5 shadow-sm space-y-3.5 transition-all"
+              >
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pp-primary/10 text-pp-primary shadow-sm">
+                      <LuCalendarDays className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight">
+                        Select Preferred Delivery Date
+                      </h3>
+                      <p className="text-[11px] text-slate-500 font-medium">Choose when you would like to receive this order</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {prepDays > 0 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-[10px] font-bold text-amber-800 shadow-sm">
+                        <LuClock className="h-3 w-3" />
+                        {prepDays} day{prepDays === 1 ? "" : "s"} preparation
+                      </span>
+                    )}
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 border border-blue-200 px-2.5 py-1 text-[10px] font-bold text-blue-800 shadow-sm">
+                      <LuTruck className="h-3 w-3" />
+                      +{deliveryDays} day{deliveryDays === 1 ? "" : "s"} delivery
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick Date Chips */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Quick options</span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {quickDateOptions.map((opt, idx) => {
+                      const isSelected = selectedDeliveryDate === opt.ymd;
+                      return (
+                        <button
+                          key={opt.ymd}
+                          type="button"
+                          onClick={() => setSelectedDeliveryDate(opt.ymd)}
+                          className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition-all ${isSelected
+                            ? "border-pp-primary bg-pp-primary text-white shadow-md shadow-pp-primary/25 scale-[1.02]"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-pp-primary/30 hover:bg-slate-50"
+                            }`}
+                        >
+                          <span className={`text-[10px] font-black uppercase tracking-wider ${isSelected ? "text-white/80" : "text-pp-primary"}`}>
+                            {opt.isEarliest ? "Earliest" : `+${idx} Day${idx > 1 ? "s" : ""}`}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => router.push(`/product/${product.id}/personalize`)}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 hover:text-purple-900 bg-white px-2.5 py-1 rounded-full border border-purple-200 shadow-xs"
-                          >
-                            <LuPencil className="w-3 h-3" /> Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleRemoveCustomization}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-white px-2.5 py-1 rounded-full border border-rose-200 shadow-xs"
-                          >
-                            <LuTrash2 className="w-3 h-3" /> Remove
-                          </button>
-                        </div>
+                          <span className="text-xs sm:text-sm font-black mt-0.5">
+                            {formatDeliveryDisplay(opt.ymd)}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Custom Date Input */}
+                <div className="space-y-1 pt-1">
+                  <label className="block text-[11px] font-bold text-slate-600">
+                    Or pick another date:
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="date"
+                      min={minDateStr}
+                      max={maxDateStr}
+                      value={selectedDeliveryDate}
+                      onChange={(e) => handleDateChange(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-bold text-slate-800 shadow-sm focus:border-pp-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-pp-primary/20 transition-all cursor-pointer"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    * Dates before {formatDeliveryDisplay(minDateStr)} are disabled (Preparation: {prepDays}d + Delhivery: {deliveryDays}d).
+                  </p>
+                </div>
+
+                {/* Selected Date Confirmation Banner */}
+                <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200/80 px-3.5 py-2 text-xs font-bold text-emerald-800">
+                  <LuCheck className="h-4 w-4 shrink-0 text-emerald-600" />
+                  <span>Delivery scheduled for <strong className="underline decoration-emerald-500/50 underline-offset-2">{formatDeliveryDisplay(selectedDeliveryDate || minDateStr)}</strong></span>
+                </div>
+              </div>
+
+              {/* Delhivery Pincode Serviceability Checker */}
+
+
+              {/* Inline Personalization Section */}
+              {isCustomizable && (
+                <div
+                  ref={customizationSectionRef}
+                  className="rounded-2xl border border-purple-200 bg-gradient-to-br from-white via-purple-50/20 to-indigo-50/30 p-4 sm:p-5 shadow-sm space-y-4"
+                >
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-600/10 text-purple-600 shadow-xs">
+                        <LuSparkles className="h-5 w-5" />
                       </div>
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight">
+                          Personalize This Product
+                        </h3>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          {allowPhoto && allowText
+                            ? "Upload your photo and enter custom text"
+                            : allowPhoto
+                              ? "Upload your custom photo for this item"
+                              : "Enter your custom name or message"}
+                        </p>
+                      </div>
+                    </div>
 
-                      <div className="flex flex-wrap items-center gap-4 bg-white rounded-xl p-3 border border-purple-100">
-                        {savedCustomization?.customPhotoUrl && (
-                          <div className="flex items-center gap-2.5">
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 shrink-0">
-                              <Image
-                                src={savedCustomization.customPhotoUrl}
-                                alt="Customized photo"
-                                fill
-                                sizes="48px"
-                                className="object-cover"
-                              />
-                            </div>
-                            <div>
-                              <span className="text-[10px] font-bold text-slate-400 block uppercase">Photo Attached</span>
-                              <span className="text-xs font-semibold text-emerald-600">Custom Photo Ready</span>
-                            </div>
-                          </div>
-                        )}
+                    {isPersonalizationComplete && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                        <LuCheck className="w-3 h-3 text-emerald-600" />
+                        Customization Ready
+                      </span>
+                    )}
+                  </div>
 
-                        {savedCustomization?.customText && (
-                          <div className="flex-1 min-w-[140px]">
-                            <span className="text-[10px] font-bold text-slate-400 block uppercase">Custom Text</span>
-                            <p className="text-xs font-semibold text-slate-800 break-words italic">
-                              "{savedCustomization.customText}"
-                            </p>
-                          </div>
-                        )}
-
-                        {savedCustomization?.customNote && (
-                          <div className="w-full pt-2 border-t border-purple-50">
-                            <span className="text-[10px] font-bold text-slate-400 block uppercase">Note / Special Instructions</span>
-                            <p className="text-xs text-slate-700 italic break-words">
-                              "{savedCustomization.customNote}"
-                            </p>
-                          </div>
+                  {/* Custom Text Input */}
+                  {allowText && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                          <LuType className="w-3.5 h-3.5 text-purple-600" />
+                          <span>{promptText}</span>
+                          <span className="text-[10px] text-rose-500 font-semibold">*Required</span>
+                        </label>
+                        <span className="text-[10px] font-semibold text-slate-400">
+                          {customText.length}/{maxTextLimit}
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          maxLength={maxTextLimit}
+                          value={customText}
+                          onChange={(e) => handleTextChange(e.target.value)}
+                          placeholder={product.customTextPrompt || "e.g. John & Sarah / Happy Birthday"}
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+                        />
+                        {customText && (
+                          <button
+                            type="button"
+                            onClick={() => handleTextChange("")}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <LuX className="w-3.5 h-3.5" />
+                          </button>
                         )}
                       </div>
                     </div>
-                  ) : (
-                    <div className="rounded-2xl border border-purple-200/80 bg-gradient-to-r from-purple-50 via-indigo-50/40 to-pp-primary/5 p-4 flex items-center justify-between gap-3 shadow-xs">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-8 h-8 rounded-xl bg-purple-600/10 flex items-center justify-center text-purple-600 shrink-0">
-                          <LuSparkles className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs sm:text-sm font-bold text-slate-900 truncate">Personalization Available</p>
-                          <p className="text-[11px] text-slate-500">
-                            {product.allowPhotoUpload && product.allowTextInput
-                              ? "Upload your photo or add custom text"
-                              : product.allowPhotoUpload
-                              ? "Upload your custom photo"
-                              : "Enter your custom text or name"}
-                          </p>
-                        </div>
+                  )}
+
+                  {/* Custom Photo Upload */}
+                  {allowPhoto && (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                          <LuImage className="w-3.5 h-3.5 text-purple-600" />
+                          <span>Upload Custom Photo</span>
+                          <span className="text-[10px] text-rose-500 font-semibold">*Required</span>
+                        </label>
+                        {customPhotoUrl && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                            <LuCheck className="w-3 h-3 text-emerald-600" /> Photo Uploaded
+                          </span>
+                        )}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/product/${product.id}/personalize`)}
-                        className="shrink-0 text-xs font-bold text-purple-700 bg-white hover:bg-purple-50 px-3 py-1.5 rounded-full border border-purple-200 shadow-xs transition-colors"
-                      >
-                        Personalize Now
-                      </button>
+
+                      {customPhotoUrl ? (
+                        <div className="flex items-center justify-between gap-3 bg-white rounded-xl p-3 border border-purple-200 shadow-xs">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-200 shrink-0 bg-slate-50">
+                              <Image
+                                src={customPhotoUrl}
+                                alt="Customized photo"
+                                fill
+                                sizes="56px"
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-900 truncate">Photo Ready</p>
+                              <p className="text-[10px] text-slate-400">Attached to your order</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <label className="inline-flex items-center gap-1 text-xs font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg border border-purple-200 cursor-pointer transition-colors">
+                              <LuPencil className="w-3 h-3" /> Change
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handlePhotoSelect}
+                                className="hidden"
+                                disabled={uploadingPhoto}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={handleRemovePhoto}
+                              className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 rounded-lg border border-rose-200 transition-colors"
+                            >
+                              <LuTrash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <label className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl p-4 transition-all cursor-pointer ${uploadingPhoto
+                            ? "border-purple-300 bg-purple-50/50 cursor-wait"
+                            : "border-purple-200/90 hover:border-purple-400 bg-purple-50/20 hover:bg-purple-50/40"
+                          }`}>
+                          {uploadingPhoto ? (
+                            <div className="flex items-center gap-2 py-2 text-purple-700">
+                              <LuLoaderCircle className="w-5 h-5 animate-spin text-purple-600" />
+                              <span className="text-xs font-bold">Uploading photo, please wait...</span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600 mb-1.5">
+                                <LuUpload className="w-5 h-5" />
+                              </div>
+                              <span className="text-xs font-bold text-slate-800">
+                                Click to choose and upload photo
+                              </span>
+                              <span className="text-[10px] text-slate-400 mt-0.5">
+                                Supports JPG, PNG, WEBP (Max 10MB)
+                              </span>
+                            </>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhotoSelect}
+                            className="hidden"
+                            disabled={uploadingPhoto}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Optional Special Instructions / Note */}
+                  <div className="space-y-1.5 pt-1 border-t border-purple-100/60">
+                    <label className="block text-[11px] font-bold text-slate-600">
+                      Special Instructions / Note <span className="text-[10px] text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={150}
+                      value={customNote}
+                      onChange={(e) => handleNoteChange(e.target.value)}
+                      placeholder="e.g. Gift wrap please, or placement request"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-800 placeholder:text-slate-400 outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all"
+                    />
+                  </div>
+
+                  {customizationError && (
+                    <div className="flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700">
+                      <span>⚠</span>
+                      <span>{customizationError}</span>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Action buttons – desktop */}
-              <div className="hidden sm:flex gap-4">
+              {/* Action buttons – desktop (Sticky fixed on screen on the right side) */}
+              <div className="hidden sm:flex gap-3 sticky bottom-4 z-30 bg-white/95 backdrop-blur-xl p-3 rounded-2xl border border-slate-200/90 shadow-[0_12px_35px_rgba(18,52,104,0.14)]">
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`flex-1 flex items-center justify-center gap-2 rounded-full border-2 border-pp-primary text-pp-primary px-6 py-4 font-bold hover:bg-pp-primary/5 active:scale-95 transition-all ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed" : ""}`}
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-full border-2 border-pp-primary text-pp-primary px-5 py-3.5 font-bold hover:bg-pp-primary/5 active:scale-95 transition-all text-sm ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed" : ""}`}
                 >
-                  <LuShoppingCart className="w-5 h-5" />
+                  <LuShoppingCart className="w-4 h-4" />
                   {isInCart ? "GO TO CART" : "ADD TO CART"}
                 </button>
                 <button
                   onClick={handleBuyNow}
                   disabled={isOutOfStock}
-                  className={`flex-1 flex items-center justify-center gap-2 rounded-full ${
-                    isCustomizable && !hasCustomization
-                      ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-pp-primary text-white shadow-purple-500/25"
-                      : "bg-pp-primary text-white shadow-pp-primary/25"
-                  } px-6 py-4 font-bold shadow-lg hover:scale-[1.02] active:scale-95 transition-all ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : "animate-attention"}`}
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-full ${isCustomizable && !isPersonalizationComplete
+                    ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-pp-primary text-white shadow-purple-500/25"
+                    : "bg-pp-primary text-white shadow-pp-primary/25"
+                    } px-5 py-3.5 font-bold shadow-lg hover:scale-[1.02] active:scale-95 transition-all text-sm ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : "animate-attention"}`}
                 >
                   {isOutOfStock ? (
                     <>OUT OF STOCK</>
-                  ) : isCustomizable && !hasCustomization ? (
-                    <>
-                      <LuSparkles className="w-5 h-5 text-amber-300" />
-                      Personalize
-                    </>
                   ) : (
                     <>
-                      <LuZap className="w-5 h-5" />
+                      <LuZap className="w-4 h-4" />
                       Buy at {formatPrice(product.price)}
                     </>
                   )}
                 </button>
               </div>
-            </div>
-          </div>
 
-          {/* Description + Reviews Bento Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            {/* Product Description */}
-            <div className="lg:col-span-7 bg-white rounded-[2rem] border border-slate-100 p-6 sm:p-8 shadow-sm">
-              <h3 className="text-xl font-black text-slate-950 mb-4">Product Description</h3>
-              <div className="text-sm leading-6 text-slate-600">
-                {cleanedDescription ? (
-                  <>
-                    <div
-                      ref={descRef}
-                      className={`product-description-content ${
-                        isDescExpanded ? "" : "max-h-[9rem] overflow-hidden relative"
-                      }`}
-                      dangerouslySetInnerHTML={{ __html: cleanedDescription }}
-                    />
-                    {canExpandDesc && (
-                      <button
-                        onClick={() => setIsDescExpanded(!isDescExpanded)}
-                        className="mt-3 font-bold text-pp-primary hover:underline focus:outline-none text-xs flex items-center gap-1"
-                      >
-                        {isDescExpanded ? "See Less" : "See More"}
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <p className="text-slate-400 italic">No description available.</p>
-                )}
+              {/* Mobile: Product Description & Customer Reviews */}
+              <div className="flex lg:hidden flex-col gap-6 mt-2">
+                {renderDescription(true)}
+                {renderReviews()}
               </div>
-
-              {product.videoUrl && (
-                <div className="mt-6">
-                  <h4 className="flex items-center gap-2 text-sm font-black text-slate-700 mb-3">
-                    <LuPlay className="w-4 h-4 text-pp-primary" /> Product Video
-                  </h4>
-                  <div className="relative aspect-video overflow-hidden rounded-2xl bg-black/5">
-                    <video controls className="w-full h-full">
-                      <source src={product.videoUrl} />
-                    </video>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Customer Reviews */}
-            <div className="lg:col-span-5 bg-white rounded-[2rem] border border-slate-100 p-6 sm:p-8 shadow-sm flex flex-col">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-xl font-black text-slate-950">Customer Reviews</h3>
-                {reviews.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl font-black text-pp-primary">{product.rating || 0}</span>
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <LuStar key={s} className={`w-3.5 h-3.5 ${s <= (product.rating || 0) ? "fill-amber-400 text-amber-400" : "text-slate-200"}`} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {reviews.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
-                  <p className="text-slate-400 font-bold text-sm uppercase tracking-widest">No Reviews Yet</p>
-                  <p className="text-xs text-slate-300 mt-2">Be the first to review this product after purchase!</p>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1 no-scrollbar">
-                    {reviews.slice(0, visibleReviewsCount).map((review) => {
-                      const initial = review.customer?.customerName?.charAt(0).toUpperCase() || "?";
-                      return (
-                        <div key={review.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-9 h-9 rounded-full bg-pp-primary/10 flex items-center justify-center text-pp-primary font-black text-sm shrink-0">
-                                {initial}
-                              </div>
-                              <div>
-                                <p className="font-bold text-slate-900 text-sm leading-none">{review.customer?.customerName || "Anonymous"}</p>
-                                <p className="text-[10px] text-slate-400 mt-0.5">{new Date(review.createdAt).toLocaleDateString()}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1 bg-amber-50 border border-amber-100 px-2 py-1 rounded-lg shrink-0">
-                              <span className="text-xs font-bold text-amber-700">{review.rating}</span>
-                              <LuStar className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            </div>
-                          </div>
-                          <p className="text-xs text-slate-500 italic leading-relaxed">&ldquo;{review.comment}&rdquo;</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {reviews.length > visibleReviewsCount && (
-                    <button
-                      onClick={() => setVisibleReviewsCount((prev) => prev + 5)}
-                      className="w-full py-3 mt-4 text-pp-primary font-bold hover:bg-pp-primary/5 rounded-xl transition-colors text-sm"
-                    >
-                      Load More Reviews ({reviews.length - visibleReviewsCount}+)
-                    </button>
-                  )}
-                </>
-              )}
             </div>
           </div>
 
@@ -969,18 +1167,13 @@ export default function ProductClient({ product }: { product: Product }) {
             <button
               onClick={handleBuyNow}
               disabled={isOutOfStock}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-full ${
-                isCustomizable && !hasCustomization
-                  ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-pp-primary text-white shadow-purple-500/20"
-                  : "bg-pp-primary text-white shadow-pp-primary/20"
-              } py-4 text-sm font-bold shadow-lg transition-all active:scale-95 ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : ""}`}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-full ${isCustomizable && !isPersonalizationComplete
+                ? "bg-gradient-to-r from-purple-600 via-indigo-600 to-pp-primary text-white shadow-purple-500/20"
+                : "bg-pp-primary text-white shadow-pp-primary/20"
+                } py-4 text-sm font-bold shadow-lg transition-all active:scale-95 ${isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : ""}`}
             >
               {isOutOfStock ? (
                 <>OUT OF STOCK</>
-              ) : isCustomizable && !hasCustomization ? (
-                <>
-                  <LuSparkles className="w-5 h-5 text-amber-300" /> Personalize
-                </>
               ) : (
                 <>
                   <LuZap className="w-5 h-5" /> Buy at {formatPrice(product.price)}

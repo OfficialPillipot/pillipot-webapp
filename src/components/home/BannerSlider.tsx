@@ -39,7 +39,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
           <SwiperSlide key={banner.id}>
             <Link
               href={banner.linkUrl || "#"}
-              className="group relative block overflow-hidden sm:min-h-[340px] "
+              className="group relative block overflow-hidden h-[120px] sm:h-[170px] md:h-[200px]"
             >
               <Image
                 src={banner.imageUrl}
@@ -53,7 +53,7 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
               <div className="absolute inset-0 " />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,177,195,0.32),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(246,126,54,0.25),transparent_20%)]" />
 
-              <div className="pp-container relative flex min-h-[133px] items-center py-8 sm:min-h-[340px] md:min-h-[406px] md:py-10">
+              <div className="pp-container relative flex h-full items-center py-3 sm:py-4 md:py-5">
                 <div className="max-w-2xl text-white">
 
 
@@ -62,13 +62,13 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
                   </h2> */}
 
                   {banner.description ? (
-                    <p className="mt-3 max-w-lg text-xs leading-6 text-white/78 sm:text-sm sm:leading-7 md:mt-5 md:text-base">
+                    <p className="max-w-lg text-xs leading-5 text-white/78 sm:text-sm sm:leading-6">
                       {banner.description}
                     </p>
                   ) : null}
 
                   {banner.linkUrl ? (
-                    <div className="hidden sm:flex mt-5 flex-wrap items-center gap-2 sm:mt-8 sm:gap-3">
+                    <div className="hidden sm:flex mt-3 flex-wrap items-center gap-2 sm:gap-3">
                       {/* <span className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-[#123468] shadow-[0_20px_45px_rgba(0,0,0,0.18)] sm:px-6 sm:py-3 sm:text-sm">
                         Shop now
                       </span> */}
@@ -84,17 +84,17 @@ const BannerSlider: React.FC<BannerSliderProps> = ({ banners }) => {
       <style jsx global>{`
         .banner-swiper .swiper-button-next,
         .banner-swiper .swiper-button-prev {
-          width: 52px;
-          height: 52px;
+          width: 38px;
+          height: 38px;
           border-radius: 999px;
-          background: rgba(255, 255, 255, 0.14);
-          border: 1px solid rgba(255, 255, 255, 0.18);
+          background: rgba(255, 255, 255, 0.18);
+          border: 1px solid rgba(255, 255, 255, 0.25);
           backdrop-filter: blur(14px);
         }
 
         .banner-swiper .swiper-button-next:after,
         .banner-swiper .swiper-button-prev:after {
-          font-size: 18px;
+          font-size: 14px;
           font-weight: 800;
         }
 

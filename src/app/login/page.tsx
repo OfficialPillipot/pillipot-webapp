@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { login as loginApi, forgotPassword } from "@/lib/api";
+import { login as loginApi, forgotPassword, googleAuth } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { LuEye, LuEyeOff, LuLock, LuUser, LuArrowRight, LuShoppingBag } from "react-icons/lu";
+import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [view, setView] = useState<"login" | "forgot">("login");
@@ -19,6 +21,100 @@ export default function LoginPage() {
 
   const { login } = useAuth();
   const router = useRouter();
+
+  // Load Google Identity Services script
+  useEffect(() => {
+    const scriptId = "google-gsi-client";
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  const handleGoogleSignIn = () => {
+    setError("");
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+    if (!clientId) {
+      setError(
+        "Google Client ID is not configured yet. Please add NEXT_PUBLIC_GOOGLE_CLIENT_ID to your .env.local file to enable Google sign-in."
+      );
+      return;
+    }
+
+    if (typeof window === "undefined" || !(window as any).google?.accounts) {
+      setError("Google authentication service is loading. Please try again in a moment.");
+      return;
+    }
+
+    try {
+      setGoogleLoading(true);
+      const google = (window as any).google;
+
+      if (google.accounts.oauth2) {
+        const tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: "email profile openid",
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse?.error) {
+              setGoogleLoading(false);
+              setError("Google sign in was cancelled or failed.");
+              return;
+            }
+            if (tokenResponse?.access_token) {
+              try {
+                const res = await googleAuth({ token: tokenResponse.access_token });
+                if (res?.accessToken) {
+                  login(res.accessToken, res.user);
+                  router.push("/");
+                } else {
+                  setError("Failed to sign in with Google.");
+                }
+              } catch (err: any) {
+                setError(err.message || "Failed to authenticate with Google.");
+              } finally {
+                setGoogleLoading(false);
+              }
+            } else {
+              setGoogleLoading(false);
+            }
+          },
+        });
+        tokenClient.requestAccessToken({ prompt: "select_account" });
+      } else if (google.accounts.id) {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async (response: any) => {
+            if (response.credential) {
+              try {
+                const res = await googleAuth({ credential: response.credential });
+                if (res?.accessToken) {
+                  login(res.accessToken, res.user);
+                  router.push("/");
+                } else {
+                  setError("Failed to sign in with Google.");
+                }
+              } catch (err: any) {
+                setError(err.message || "Failed to authenticate with Google.");
+              } finally {
+                setGoogleLoading(false);
+              }
+            } else {
+              setGoogleLoading(false);
+            }
+          },
+        });
+        google.accounts.id.prompt();
+      }
+    } catch (err: any) {
+      setGoogleLoading(false);
+      setError(err.message || "An error occurred with Google Sign-in.");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,12 +188,37 @@ export default function LoginPage() {
           </div>
 
           {view === "login" ? (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-red-600 text-sm font-semibold animate-shake">
-                  {error}
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={googleLoading || loading}
+                  className="w-full flex items-center justify-center gap-3 py-4 px-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/90 rounded-2xl font-bold text-sm text-slate-700 shadow-xs hover:shadow-sm transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+                >
+                  {googleLoading ? (
+                    <span className="w-5 h-5 border-2 border-pp-primary border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <FcGoogle className="w-5 h-5" />
+                  )}
+                  <span>{googleLoading ? "Connecting to Google..." : "Continue with Google"}</span>
+                </button>
+
+                <div className="relative flex items-center justify-center">
+                  <div className="border-t border-slate-200 w-full" />
+                  <span className="bg-white px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
+                    or continue with email
+                  </span>
+                  <div className="border-t border-slate-200 w-full" />
                 </div>
-              )}
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 border border-red-100 p-4 rounded-xl text-red-600 text-sm font-semibold animate-shake">
+                    {error}
+                  </div>
+                )}
 
               <div className="space-y-5">
                 <div className="space-y-2">
@@ -168,6 +289,7 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
+          </div>
           ) : (
             <form onSubmit={handleForgotSubmit} className="space-y-6">
               {error && (

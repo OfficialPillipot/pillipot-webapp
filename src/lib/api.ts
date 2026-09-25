@@ -116,8 +116,8 @@ export async function getSubcategories(categoryId: string): Promise<Category[]> 
 }
 
 export async function getProducts(
-  categoryId?: string, 
-  search?: string, 
+  categoryId?: string,
+  search?: string,
   tag?: string,
   subcategoryId?: string,
   minPrice?: number,
@@ -134,7 +134,7 @@ export async function getProducts(
   if (maxPrice) params.append("maxPrice", maxPrice.toString());
   if (minRating) params.append("minRating", minRating.toString());
   if (sort) params.append("sort", sort);
-  
+
   const query = params.toString();
   const path = query ? `/customer/products?${query}` : "/customer/products";
 
@@ -228,6 +228,15 @@ export async function register(dto: RegisterDto): Promise<{ accessToken: string;
   } catch {
     return null;
   }
+}
+
+export async function googleAuth(data: { credential?: string; token?: string; email?: string; name?: string }): Promise<{ accessToken: string; user: User } | null> {
+  return await fetchJson<{ accessToken: string; user: User }>("/auth/customer/google", {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
 }
 
 export async function getMe(token: string): Promise<User | null> {
@@ -324,7 +333,7 @@ export async function uploadCustomPhotoApi(file: File): Promise<{ url: string }>
     try {
       const d = await res.json();
       if (d.message) msg = Array.isArray(d.message) ? d.message[0] : d.message;
-    } catch {}
+    } catch { }
     throw new Error(msg);
   }
   return res.json();
@@ -482,7 +491,7 @@ export async function verifyPayment(body: {
       if (data.message) {
         msg = Array.isArray(data.message) ? data.message[0] : data.message;
       }
-    } catch {}
+    } catch { }
     throw new Error(msg);
   }
   return res.json();
@@ -647,10 +656,10 @@ export type Review = {
 };
 
 export async function submitReview(
-  token: string, 
-  productId: string, 
-  rating: number, 
-  orderId: string, 
+  token: string,
+  productId: string,
+  rating: number,
+  orderId: string,
   comment?: string
 ): Promise<any> {
   const res = await fetch(`${API_URL}/customer/reviews`, {
@@ -672,7 +681,7 @@ export async function submitReview(
       } else if (data.error) {
         msg = data.error;
       }
-    } catch {}
+    } catch { }
     throw new Error(msg);
   }
 
@@ -701,7 +710,7 @@ export async function registerVendor(data: any): Promise<{ message: string; vend
     try {
       const errorData = await res.json();
       msg = errorData.message || (Array.isArray(errorData.message) ? errorData.message[0] : errorData.message) || msg;
-    } catch {}
+    } catch { }
     throw new Error(msg);
   }
 

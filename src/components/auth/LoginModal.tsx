@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { LuX, LuMail, LuLock, LuLoaderCircle, LuArrowRight, LuCircleAlert, LuUser as UserIcon, LuPhone } from "react-icons/lu";
+import { FcGoogle } from "react-icons/fc";
 import { useAuth } from "@/context/AuthContext";
-import { forgotPassword, login as loginApi, register as registerApi } from "@/lib/api";
+import { forgotPassword, login as loginApi, register as registerApi, googleAuth } from "@/lib/api";
 
 export default function AuthModal() {
   const { 
@@ -19,14 +20,28 @@ export default function AuthModal() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   // Synchronize internal view state with global modal state
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLoginModalOpen) setView("login");
     if (isRegisterModalOpen) setView("register");
   }, [isLoginModalOpen, isRegisterModalOpen]);
+
+  // Load Google Identity Services script
+  useEffect(() => {
+    const scriptId = "google-gsi-client";
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+  }, []);
 
   if (!isLoginModalOpen && !isRegisterModalOpen) return null;
 
@@ -128,6 +143,89 @@ export default function AuthModal() {
     }
   };
 
+  const handleGoogleSignIn = () => {
+    setError(null);
+    setSuccess(null);
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+    if (!clientId) {
+      setError(
+        "Google Client ID is not configured yet. Please add NEXT_PUBLIC_GOOGLE_CLIENT_ID to your .env.local file to enable Google sign-in."
+      );
+      return;
+    }
+
+    if (typeof window === "undefined" || !(window as any).google?.accounts) {
+      setError("Google authentication service is loading. Please try again in a moment.");
+      return;
+    }
+
+    try {
+      setGoogleLoading(true);
+      const google = (window as any).google;
+
+      // Prefer OAuth2 Token Client for standard pop-up account picker
+      if (google.accounts.oauth2) {
+        const tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: "email profile openid",
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse?.error) {
+              setGoogleLoading(false);
+              setError("Google sign in was cancelled or failed.");
+              return;
+            }
+            if (tokenResponse?.access_token) {
+              try {
+                const res = await googleAuth({ token: tokenResponse.access_token });
+                if (res?.accessToken) {
+                  login(res.accessToken, res.user);
+                  handleClose();
+                } else {
+                  setError("Failed to sign in with Google.");
+                }
+              } catch (err: any) {
+                setError(err.message || "Failed to authenticate with Google.");
+              } finally {
+                setGoogleLoading(false);
+              }
+            } else {
+              setGoogleLoading(false);
+            }
+          },
+        });
+        tokenClient.requestAccessToken({ prompt: "select_account" });
+      } else if (google.accounts.id) {
+        google.accounts.id.initialize({
+          client_id: clientId,
+          callback: async (response: any) => {
+            if (response.credential) {
+              try {
+                const res = await googleAuth({ credential: response.credential });
+                if (res?.accessToken) {
+                  login(res.accessToken, res.user);
+                  handleClose();
+                } else {
+                  setError("Failed to sign in with Google.");
+                }
+              } catch (err: any) {
+                setError(err.message || "Failed to authenticate with Google.");
+              } finally {
+                setGoogleLoading(false);
+              }
+            } else {
+              setGoogleLoading(false);
+            }
+          },
+        });
+        google.accounts.id.prompt();
+      }
+    } catch (err: any) {
+      setGoogleLoading(false);
+      setError(err.message || "An error occurred with Google Sign-in.");
+    }
+  };
+
   const isLoginView = view === "login";
   const isRegisterView = view === "register";
   const isForgotView = view === "forgot";
@@ -177,6 +275,38 @@ export default function AuthModal() {
           {success && (
             <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-2xl text-green-700 text-sm animate-in fade-in slide-in-from-top-2 whitespace-pre-line">
               <p>{success}</p>
+            </div>
+          )}
+
+          {!isForgotView && (
+            <div className="mb-6 space-y-4">
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                disabled={googleLoading || loading}
+                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50/90 rounded-2xl font-bold text-sm text-slate-700 shadow-xs hover:shadow-sm transition-all active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+              >
+                {googleLoading ? (
+                  <LuLoaderCircle className="w-5 h-5 animate-spin text-pp-primary" />
+                ) : (
+                  <FcGoogle className="w-5 h-5" />
+                )}
+                <span>
+                  {googleLoading
+                    ? "Connecting to Google..."
+                    : isRegisterView
+                      ? "Sign up with Google"
+                      : "Continue with Google"}
+                </span>
+              </button>
+
+              <div className="relative flex items-center justify-center">
+                <div className="border-t border-slate-200 w-full" />
+                <span className="bg-white px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
+                  or continue with email
+                </span>
+                <div className="border-t border-slate-200 w-full" />
+              </div>
             </div>
           )}
 
