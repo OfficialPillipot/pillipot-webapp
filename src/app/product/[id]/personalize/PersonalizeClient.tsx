@@ -30,6 +30,7 @@ export default function PersonalizeClient({ product }: PersonalizeClientProps) {
   const router = useRouter();
   const { success, error } = useToast();
 
+  const isOutOfStock = (product.stockQuantity ?? 0) <= 0;
   const allowPhoto = !!product.allowPhotoUpload;
   const allowText = !!product.allowTextInput;
   const promptText = product.customTextPrompt || "Enter custom text (name, quote, or message)";
@@ -148,6 +149,10 @@ export default function PersonalizeClient({ product }: PersonalizeClientProps) {
   };
 
   const handleFinalizePurchase = (action: "buyNow" | "returnToProduct") => {
+    if (action === "buyNow" && isOutOfStock) {
+      error("This product is currently out of stock.");
+      return;
+    }
     setIsFinalizing(true);
     try {
       saveCustomizationData();
@@ -617,11 +622,15 @@ export default function PersonalizeClient({ product }: PersonalizeClientProps) {
 
             <button
               type="button"
-              disabled={isFinalizing}
+              disabled={isFinalizing || isOutOfStock}
               onClick={() => handleFinalizePurchase("buyNow")}
-              className="w-full sm:flex-1 flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-pp-primary text-white py-4 px-8 font-bold text-sm sm:text-base shadow-lg shadow-purple-500/25 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+              className={`w-full sm:flex-1 flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-pp-primary text-white py-4 px-8 font-bold text-sm sm:text-base shadow-lg shadow-purple-500/25 hover:scale-[1.02] active:scale-95 transition-all ${
+                isOutOfStock ? "opacity-50 grayscale cursor-not-allowed shadow-none" : "disabled:opacity-50"
+              }`}
             >
-              {isFinalizing ? (
+              {isOutOfStock ? (
+                "Product Out of Stock"
+              ) : isFinalizing ? (
                 <>
                   <LuLoader className="w-5 h-5 animate-spin" /> Finalizing...
                 </>

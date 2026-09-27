@@ -7,6 +7,7 @@ import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ToastProvider } from "@/context/ToastContext";
 import ScrollToTop from "@/components/common/ScrollToTop";
+import TrafficTracker from "@/components/common/TrafficTracker";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -23,6 +24,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     >
       <ToastProvider>
         <AuthProvider>
+          <TrafficTracker />
           <CartProvider>
             <WishlistProvider>
               <ScrollToTop />

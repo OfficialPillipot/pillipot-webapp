@@ -33,6 +33,10 @@ export default function CartPage() {
       }))
     : 0;
 
+  const hasOutOfStockItems = cart.some(
+    (item) => item.stockQuantity !== undefined && item.stockQuantity !== null && item.stockQuantity <= 0
+  );
+
   if (cart.length === 0) {
     return (
       <div className="flex flex-col min-h-screen bg-slate-50">
@@ -111,6 +115,11 @@ export default function CartPage() {
                     <div className="min-w-0">
                       <p className="text-[9px] font-bold text-pp-primary uppercase tracking-wider mb-0.5 truncate">{item.brand || "PILLIPOT"}</p>
                       <h3 className="text-xs sm:text-base font-bold font-sora text-slate-800 capitalize truncate">{item.name}</h3>
+                      {item.stockQuantity !== undefined && item.stockQuantity !== null && item.stockQuantity <= 0 && (
+                        <span className="inline-flex items-center gap-1 rounded bg-rose-100 px-2 py-0.5 text-[10px] font-black text-rose-700 uppercase tracking-wider mt-1">
+                          Out of Stock
+                        </span>
+                      )}
                     </div>
                     <button
                       onClick={() => removeFromCart(item.id)}
@@ -229,13 +238,17 @@ export default function CartPage() {
             {/* Desktop Proceed Button */}
             <button
               onClick={() => {
-                if (Object.values(syncingItems).some(isSyncing => isSyncing)) return;
+                if (hasOutOfStockItems || Object.values(syncingItems).some(isSyncing => isSyncing)) return;
                 router.push("/checkout");
               }}
-              disabled={Object.values(syncingItems).some(isSyncing => isSyncing)}
-              className="hidden lg:flex w-full bg-pp-primary text-white py-4 rounded-full font-black font-sora text-base items-center justify-center gap-3 shadow-lg shadow-pp-primary/30 hover:brightness-110 active:scale-95 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:grayscale disabled:cursor-wait"
+              disabled={hasOutOfStockItems || Object.values(syncingItems).some(isSyncing => isSyncing)}
+              className="hidden lg:flex w-full bg-pp-primary text-white py-4 rounded-full font-black font-sora text-base items-center justify-center gap-3 shadow-lg shadow-pp-primary/30 hover:brightness-110 active:scale-95 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
             >
-              {Object.values(syncingItems).some(isSyncing => isSyncing) ? "SAVING..." : "PROCEED TO CHECKOUT"}
+              {hasOutOfStockItems
+                ? "REMOVE OUT OF STOCK ITEMS"
+                : Object.values(syncingItems).some(isSyncing => isSyncing)
+                  ? "SAVING..."
+                  : "PROCEED TO CHECKOUT"}
               <LuArrowRight className="w-5 h-5" />
             </button>
 
@@ -259,13 +272,19 @@ export default function CartPage() {
           </div>
           <button
             onClick={() => {
-              if (Object.values(syncingItems).some(isSyncing => isSyncing)) return;
+              if (hasOutOfStockItems || Object.values(syncingItems).some(isSyncing => isSyncing)) return;
               router.push("/checkout");
             }}
-            disabled={Object.values(syncingItems).some(isSyncing => isSyncing)}
+            disabled={hasOutOfStockItems || Object.values(syncingItems).some(isSyncing => isSyncing)}
             className="bg-pp-primary text-white py-3 px-5 sm:px-6 rounded-full font-black font-sora text-xs sm:text-sm flex items-center gap-2 shadow-md shadow-pp-primary/30 active:scale-95 transition-all disabled:opacity-50"
           >
-            <span>{Object.values(syncingItems).some(isSyncing => isSyncing) ? "SAVING..." : "PROCEED TO CHECKOUT"}</span>
+            <span>
+              {hasOutOfStockItems
+                ? "OUT OF STOCK"
+                : Object.values(syncingItems).some(isSyncing => isSyncing)
+                  ? "SAVING..."
+                  : "PROCEED TO CHECKOUT"}
+            </span>
             <LuArrowRight className="w-4 h-4" />
           </button>
         </div>
