@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { Product, fetchCart, addToCartApi, updateCartQuantityApi, clearCartApi } from "@/lib/api";
+import { Product, Addon, fetchCart, addToCartApi, updateCartQuantityApi, clearCartApi } from "@/lib/api";
 import { useAuth } from "./AuthContext";
 import { useToast } from "./ToastContext";
 
@@ -10,6 +10,9 @@ export interface CartItem extends Product {
   deliveryDate?: string;
   customText?: string;
   customPhotoUrl?: string;
+  selectedAddons?: Addon[];
+  addOnAmount?: number;
+  addOnNote?: string;
 }
 
 interface CartContextType {
@@ -19,7 +22,10 @@ interface CartContextType {
     quantity?: number,
     deliveryDate?: string,
     customText?: string,
-    customPhotoUrl?: string
+    customPhotoUrl?: string,
+    selectedAddons?: Addon[],
+    addOnAmount?: number,
+    addOnNote?: string,
   ) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -125,11 +131,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     quantity: number = 1,
     deliveryDate?: string,
     customText?: string,
-    customPhotoUrl?: string
+    customPhotoUrl?: string,
+    selectedAddons?: Addon[],
+    addOnAmount?: number,
+    addOnNote?: string,
   ) => {
     setCart((prev) => {
       const existing = prev.find(
-        (item) => item.id === product.id && item.customText === customText && item.customPhotoUrl === customPhotoUrl
+        (item) =>
+          item.id === product.id &&
+          item.customText === customText &&
+          item.customPhotoUrl === customPhotoUrl &&
+          item.addOnNote === addOnNote
       );
       if (existing) {
         const newQty = existing.cartQuantity + quantity;
@@ -139,9 +152,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         );
       }
       if (user && token) addToCartApi(token, product.id, quantity, deliveryDate, customText, customPhotoUrl);
-      return [...prev, { ...product, cartQuantity: quantity, deliveryDate, customText, customPhotoUrl }];
+      return [
+        ...prev,
+        {
+          ...product,
+          cartQuantity: quantity,
+          deliveryDate,
+          customText,
+          customPhotoUrl,
+          selectedAddons,
+          addOnAmount: addOnAmount ?? 0,
+          addOnNote,
+        },
+      ];
     });
-  }, [debouncedSync, success, token, user]);
+  }, [debouncedSync, token, user]);
 
   const removeFromCart = useCallback(async (productId: string) => {
     let exists = false;
@@ -190,7 +215,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [token, user]);
 
   const cartTotal = useMemo(() => cart.reduce(
-    (total, item) => total + item.price * item.cartQuantity,
+    (total, item) => total + (Number(item.price) + Number(item.addOnAmount || 0)) * item.cartQuantity,
     0
   ), [cart]);
 

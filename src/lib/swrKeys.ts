@@ -4,5 +4,6 @@ export const swrKeys = {
   orderDetails: (token: string, orderId: string) => ["orderDetails", token, orderId] as const,
   productOffers: (productId: string) => ["productOffers", productId] as const,
   productReviews: (productId: string) => ["productReviews", productId] as const,
+  productAddons: (productId: string) => ["productAddons", productId] as const,
 };
 

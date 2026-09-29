@@ -28,6 +28,8 @@ import {
   LuLoaderCircle,
   LuBanknote,
   LuUpload,
+  LuGift,
+  LuPlus,
 } from "react-icons/lu";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
@@ -37,7 +39,15 @@ import { useToast } from "@/context/ToastContext";
 
 import useSWR from "swr";
 import { swrKeys } from "@/lib/swrKeys";
-import { getProductOffers, getProductReviews, checkPincodeServiceability, uploadCustomPhotoApi, type PincodeServiceabilityResponse } from "@/lib/api";
+import {
+  getProductOffers,
+  getProductReviews,
+  checkPincodeServiceability,
+  uploadCustomPhotoApi,
+  getProductAddons,
+  type PincodeServiceabilityResponse,
+  type Addon,
+} from "@/lib/api";
 import { cleanQuillHtml } from "@/lib/htmlUtils";
 
 export default function ProductClient({ product }: { product: Product }) {
@@ -415,12 +425,19 @@ export default function ProductClient({ product }: { product: Product }) {
       setIsLoginModalOpen(true);
       return;
     }
+    const addOnNote = selectedAddons.length > 0
+      ? selectedAddons.map((a) => `${a.name} (+${formatPrice(Number(a.price))})`).join(", ")
+      : undefined;
+
     addToCart(
       product,
       1,
       selectedDeliveryDate,
       isCustomizable && customText.trim() ? customText.trim() : undefined,
-      isCustomizable && customPhotoUrl ? customPhotoUrl : undefined
+      isCustomizable && customPhotoUrl ? customPhotoUrl : undefined,
+      selectedAddons.length > 0 ? selectedAddons : undefined,
+      addonsTotal > 0 ? addonsTotal : undefined,
+      addOnNote
     );
   };
 
@@ -444,6 +461,12 @@ export default function ProductClient({ product }: { product: Product }) {
     if (isCustomizable && customNote.trim()) {
       params.append("customNote", customNote.trim());
     }
+    if (selectedAddons.length > 0) {
+      params.append("addOnAmount", String(addonsTotal));
+      const addOnNote = selectedAddons.map((a) => `${a.name} (+${formatPrice(Number(a.price))})`).join(", ");
+      params.append("addOnNote", addOnNote);
+      params.append("selectedAddons", JSON.stringify(selectedAddons));
+    }
     router.push(`/checkout?${params.toString()}`);
   };
 
@@ -463,6 +486,26 @@ export default function ProductClient({ product }: { product: Product }) {
 
   const { data: offers = [] } = useSWR(swrKeys.productOffers(product.id), () => getProductOffers(product.id));
   const { data: reviews = [] } = useSWR(swrKeys.productReviews(product.id), () => getProductReviews(product.id));
+  const { data: availableAddons = [] } = useSWR(swrKeys.productAddons(product.id), () => getProductAddons(product.id));
+
+  const [selectedAddons, setSelectedAddons] = useState<Addon[]>([]);
+
+  const handleToggleAddon = (addon: Addon) => {
+    setSelectedAddons((prev) => {
+      const exists = prev.some((a) => a.id === addon.id);
+      if (exists) {
+        return prev.filter((a) => a.id !== addon.id);
+      }
+      return [...prev, addon];
+    });
+  };
+
+  const addonsTotal = useMemo(() => {
+    return selectedAddons.reduce((sum, a) => sum + Number(a.price), 0);
+  }, [selectedAddons]);
+
+  const basePrice = Number(product.price);
+  const totalItemPrice = basePrice + addonsTotal;
 
   const renderDescription = (isMobile = false) => (
     <div className="bg-white rounded-[2rem] border border-slate-100 p-6 sm:p-8 shadow-sm">
@@ -1118,6 +1161,121 @@ export default function ProductClient({ product }: { product: Product }) {
                 </div>
               )}
 
+              {/* Custom Add-ons & Extras Section */}
+              {availableAddons.length > 0 && (
+                <div className="rounded-2xl border border-amber-200/90 bg-gradient-to-br from-white via-amber-50/20 to-orange-50/30 p-4 sm:p-5 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 shadow-xs">
+                        <LuGift className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight flex items-center gap-2">
+                          Available Add-ons & Extras
+                          <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                            {availableAddons.length} available
+                          </span>
+                        </h3>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          Customize or complement your gift with these special add-ons
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedAddons.length > 0 && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                        <LuCheck className="w-3 h-3 text-emerald-600" />
+                        {selectedAddons.length} selected (+{formatPrice(addonsTotal)})
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Add-on Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {availableAddons.map((addon) => {
+                      const isSelected = selectedAddons.some((a) => a.id === addon.id);
+                      return (
+                        <div
+                          key={addon.id}
+                          onClick={() => handleToggleAddon(addon)}
+                          className={`group relative rounded-xl border p-3 flex items-center justify-between gap-3 transition-all cursor-pointer ${
+                            isSelected
+                              ? "border-pp-primary bg-pp-primary/5 shadow-xs ring-2 ring-pp-primary/20 scale-[1.01]"
+                              : "border-slate-200/90 bg-white hover:border-pp-primary/40 hover:bg-slate-50/60"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200 shrink-0 bg-slate-50 flex items-center justify-center">
+                              {addon.imageUrl ? (
+                                <Image
+                                  src={addon.imageUrl}
+                                  alt={addon.name}
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-200"
+                                />
+                              ) : (
+                                <LuGift className="w-6 h-6 text-amber-500/60" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold text-slate-900 truncate" title={addon.name}>
+                                {addon.name}
+                              </p>
+                              {addon.description && (
+                                <p className="text-[10px] text-slate-400 line-clamp-1" title={addon.description}>
+                                  {addon.description}
+                                </p>
+                              )}
+                              <p className="text-xs font-black text-pp-primary mt-0.5">
+                                +{formatPrice(Number(addon.price))}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Plus / Check Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleAddon(addon);
+                            }}
+                            className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 transition-all ${
+                              isSelected
+                                ? "bg-pp-primary text-white shadow-sm scale-105"
+                                : "bg-slate-100 text-slate-600 hover:bg-pp-primary hover:text-white"
+                            }`}
+                            title={isSelected ? "Remove add-on" : "Add add-on"}
+                          >
+                            {isSelected ? <LuCheck className="w-4 h-4" /> : <LuPlus className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Price Summary Breakdown when 1 or more add-ons selected */}
+                  {selectedAddons.length > 0 && (
+                    <div className="rounded-xl bg-white/90 border border-amber-200/80 p-3 space-y-1.5 text-xs">
+                      <div className="flex justify-between text-slate-500 font-medium">
+                        <span>Base Product Price:</span>
+                        <span>{formatPrice(basePrice)}</span>
+                      </div>
+                      <div className="flex justify-between text-amber-700 font-medium">
+                        <span>
+                          Selected Add-on{selectedAddons.length > 1 ? "s" : ""} ({selectedAddons.map((a) => a.name).join(", ")}):
+                        </span>
+                        <span>+{formatPrice(addonsTotal)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-950 font-black text-sm pt-1 border-t border-slate-100">
+                        <span>Combined Total:</span>
+                        <span className="text-pp-primary">{formatPrice(totalItemPrice)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Action buttons – desktop (Sticky fixed on screen on the right side) */}
               <div className="hidden sm:flex gap-3 sticky bottom-4 z-30 bg-white/95 backdrop-blur-xl p-3 rounded-2xl border border-slate-200/90 shadow-[0_12px_35px_rgba(18,52,104,0.14)]">
                 <button
@@ -1141,7 +1299,7 @@ export default function ProductClient({ product }: { product: Product }) {
                   ) : (
                     <>
                       <LuZap className="w-4 h-4" />
-                      Buy at {formatPrice(product.price)}
+                      Buy at {formatPrice(totalItemPrice)}
                     </>
                   )}
                 </button>
@@ -1176,7 +1334,7 @@ export default function ProductClient({ product }: { product: Product }) {
                 <>OUT OF STOCK</>
               ) : (
                 <>
-                  <LuZap className="w-5 h-5" /> Buy at {formatPrice(product.price)}
+                  <LuZap className="w-5 h-5" /> Buy at {formatPrice(totalItemPrice)}
                 </>
               )}
             </button>

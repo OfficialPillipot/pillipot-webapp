@@ -93,6 +93,28 @@ export interface ProductOffer {
   isActive: boolean;
 }
 
+export interface Addon {
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  imageUrl?: string | null;
+  vendorId?: string | null;
+  productId?: string | null;
+  isActive: boolean;
+}
+
+export async function getProductAddons(productId: string): Promise<Addon[]> {
+  try {
+    return await fetchPublicJson<Addon[]>(`/customer/addons?productId=${encodeURIComponent(productId)}`, {
+      revalidate: 60,
+      tags: ["addons", `addon-${productId}`],
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function getCategories(): Promise<Category[]> {
   try {
     return await fetchPublicJson<Category[]>("/customer/categories", {
