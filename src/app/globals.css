@@ -468,3 +468,11 @@ select {
   margin-bottom: 0.5rem;
 }
 
+/* Ensure all tables and table scroll containers propagate scroll to parent page when limit is reached */
+table,
+.table-container,
+[data-table-container],
+div:has(> table) {
+  overscroll-behavior: auto;
+}
+
