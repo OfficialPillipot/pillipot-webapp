@@ -27,6 +27,8 @@ function CheckoutContent() {
   const buyNowCustomText = searchParams.get("customText") || undefined;
   const buyNowCustomPhotoUrl = searchParams.get("customPhotoUrl") || undefined;
   const buyNowCustomNote = searchParams.get("customNote") || undefined;
+  const buyNowAddOnAmount = searchParams.get("addOnAmount") ? parseFloat(searchParams.get("addOnAmount")!) : undefined;
+  const buyNowAddOnNote = searchParams.get("addOnNote") || undefined;
 
   const [urlCart, setUrlCart] = useState<any[] | null>(null);
   const [isUrlCartLoading, setIsUrlCartLoading] = useState(false);
@@ -45,6 +47,8 @@ function CheckoutContent() {
               customText: buyNowCustomText,
               customPhotoUrl: buyNowCustomPhotoUrl,
               customNote: buyNowCustomNote,
+              addOnAmount: buyNowAddOnAmount,
+              addOnNote: buyNowAddOnNote,
             }]);
           }
         } catch (e) {
@@ -55,7 +59,7 @@ function CheckoutContent() {
       }
     };
     fetchBuyNowProduct();
-  }, [buyNowId, buyNowQty, buyNowDeliveryDate, buyNowCustomText, buyNowCustomPhotoUrl, buyNowCustomNote]);
+  }, [buyNowId, buyNowQty, buyNowDeliveryDate, buyNowCustomText, buyNowCustomPhotoUrl, buyNowCustomNote, buyNowAddOnAmount, buyNowAddOnNote]);
 
   const cart = urlCart || globalCart;
   const [enrichedCart, setEnrichedCart] = useState<any[]>([]);
@@ -78,6 +82,9 @@ function CheckoutContent() {
               customText: item.customText,
               customPhotoUrl: item.customPhotoUrl,
               customNote: item.customNote,
+              addOnAmount: item.addOnAmount,
+              addOnNote: item.addOnNote,
+              selectedAddons: item.selectedAddons,
             } : item;
           }));
           setEnrichedCart(enriched);
@@ -92,7 +99,7 @@ function CheckoutContent() {
   const displayCart = enrichedCart.length > 0 ? enrichedCart : cart;
 
   const cartTotal = urlCart
-    ? urlCart.reduce((acc, item) => acc + item.price * item.cartQuantity, 0)
+    ? urlCart.reduce((acc, item) => acc + (Number(item.price) + Number(item.addOnAmount || 0)) * item.cartQuantity, 0)
     : globalCartTotal;
   const cartMrpTotal = urlCart
     ? urlCart.reduce((acc, item) => {
@@ -339,7 +346,7 @@ function CheckoutContent() {
     }
 
     try {
-      const res = await checkout(cart, { ...checkoutInfo, paymentMethod: selectedPayment }, appliedOffer);
+      const res = await checkout(displayCart, { ...checkoutInfo, paymentMethod: selectedPayment }, appliedOffer);
 
       if (res.paymentMethod === "razorpay" && res.razorpayOrderId) {
         // Load Razorpay script if not loaded
@@ -853,12 +860,17 @@ function CheckoutContent() {
                         <div className="flex-1">
                           <div className="flex justify-between items-start mb-1">
                             <h4 className="text-lg font-bold text-gray-900 group-hover:text-pp-primary transition-colors">{item.name}</h4>
-                            <p className="text-lg font-black text-gray-900">{formatPrice(item.price * item.cartQuantity)}</p>
+                            <p className="text-lg font-black text-gray-900">{formatPrice((Number(item.price) + Number(item.addOnAmount || 0)) * item.cartQuantity)}</p>
                           </div>
                           <p className="text-sm text-gray-500 font-medium">Qty: {item.cartQuantity} | <span className="text-pp-success font-bold text-[10px] uppercase tracking-wider">In Stock</span></p>
                           {item.deliveryDate && (
                             <p className="text-xs font-bold text-pp-primary mt-1">
                               📅 Delivery date: {item.deliveryDate}
+                            </p>
+                          )}
+                          {item.addOnAmount && Number(item.addOnAmount) > 0 && (
+                            <p className="text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200/80 px-2 py-0.5 rounded-md mt-1 w-fit">
+                              🎁 Add-on: {item.addOnNote || `+${formatPrice(item.addOnAmount)}`}
                             </p>
                           )}
                           {(item.customText || item.customPhotoUrl || item.customNote) && (

@@ -134,7 +134,9 @@ export default function CartPage() {
                   {/* Price & Quantity Row */}
                   <div className="mt-2 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-sm sm:text-xl font-black text-slate-900">{formatPrice(item.price)}</span>
+                      <span className="text-sm sm:text-xl font-black text-slate-900">
+                        {formatPrice(Number(item.price) + Number(item.addOnAmount || 0))}
+                      </span>
                       {item.originalPrice && item.originalPrice > item.price && (
                         <>
                           <span className="text-slate-400 line-through text-[10px] sm:text-xs">{formatPrice(item.originalPrice)}</span>
@@ -170,6 +172,12 @@ export default function CartPage() {
                   {item.deliveryDate && (
                     <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-pp-primary bg-pp-primary/5 px-2.5 py-1 rounded-lg w-fit">
                       <span>Delivery date: {item.deliveryDate}</span>
+                    </div>
+                  )}
+
+                  {item.addOnAmount && Number(item.addOnAmount) > 0 && (
+                    <div className="mt-2 flex items-center gap-1.5 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200/80 px-2.5 py-1 rounded-lg w-fit">
+                      <span>🎁 Included Add-on: {item.addOnNote || `+${formatPrice(item.addOnAmount)}`}</span>
                     </div>
                   )}
 
